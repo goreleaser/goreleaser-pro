@@ -31,4 +31,6 @@ The only difference is that features that feel more "enterprisy" will be added t
 
 You can find more details and buy it [here](https://goreleaser.com/pro/).
 
+---
+
 **✨✨ Thanks for your support! ✨✨**
