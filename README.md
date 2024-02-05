@@ -13,10 +13,21 @@ extra features.
 
 With GoReleaser Pro you can:
 
+- Create [macOS disk images (DMGs)](https://goreleaser.com/customization/dmg);
+- Create [Windows installers](https://goreleaser.com/customization/msi);
+- Use `goreleaser release --single-target` to build the whole pipeline for a
+  single architecture locally;
+- Check boxes in pull request templates;
+- [Template entire files](https://goreleaser.com/customization/templatefiles) and add them to the
+  release. You can also template files that will be included in archives,
+  packages, Docker images, etc...;
+- Use the [`.Artifacts`](https://goreleaser.com/customization/templates/#artifacts) template
+  variable to build more powerful customizations;
 - [Split and merge builds](https://goreleaser.com/customization/partial) to speed up your release
   by splitting work, use CGO, or run platform-specific code;
-- [Filter commits by path in the changelog](https://goreleaser.com/customization/changelog);
-- Have custom [before and after hooks for achives](https://goreleaser.com/customization/archive/);
+- More [changelog options](https://goreleaser.com/customization/changelog): Filter commits by path
+  & subgroups, group dividers;
+- Have custom [before and after hooks for archives](https://goreleaser.com/customization/archive/);
 - Prepare a release with
   [`goreleaser release --prepare`](https://goreleaser.com/cmd/goreleaser_release/), publish and
   announce it later with
@@ -27,10 +38,10 @@ With GoReleaser Pro you can:
   [`goreleaser changelog`](https://goreleaser.com/cmd/goreleaser_changelog/);
 - Continuously release [nightly builds](https://goreleaser.com/customization/nightlies/);
 - Import pre-built binaries with the
-  [`prebuilt` builder](https://goreleaser.com/customization/build/#import-pre-built-binaries);
-- Rootless build [Docker images](https://goreleaser.com/customization/docker/#podman) and
-  [manifests](https://goreleaser.com/customization/docker_manifest/#podman) with
-  [Podman](https://podman.io);
+  [`prebuilt` builder](https://goreleaser.com./customization/builds.md#import-pre-built-binaries);
+- Rootless build [Docker images](https://goreleaser.com./customization/docker.md#podman) and
+  [manifests](https://goreleaser.com./customization/docker_manifest.md#podman) with
+  [Podman](https://goreleaser.comhttps://podman.io);
 - Easily create `apt` and `yum` repositories with the
   [fury.io integration](https://goreleaser.com/customization/fury/);
 - Reuse configuration files with the
@@ -41,7 +52,6 @@ With GoReleaser Pro you can:
 - Create
   [custom template variables](https://goreleaser.com/customization/templates/#custom-variables)
   (goes well with [includes](https://goreleaser.com/customization/includes/)).
-
 
 And more features will be added soon.
 
