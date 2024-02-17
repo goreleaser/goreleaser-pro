@@ -66,6 +66,14 @@ I'll continue to maintain and add features as I already do. The only difference
 is that features that feel more "enterprisy" will be added to the paid version
 instead (unless someone contributes the code for it).
 
+## What's in this repository?
+
+This repository contains mainly 2 things:
+
+1. The GoReleaser Pro binaries, packages, and archives to download;
+1. The GoReleaser Pro configuration `struct`s, so you can use them to integrate
+   with other tools, or to generate YAML from Go.
+
 ## More details
 
 You can find more details and buy it [here](https://goreleaser.com/pro/).
