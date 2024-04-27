@@ -13,6 +13,8 @@ extra features.
 
 With GoReleaser Pro you can:
 
+- Cross publish (e.g. releases to GitLab, pushes Homebrew Tap to GitHub);
+- Keep [DockerHub image descriptions up to date](/customization/dockerhub);
 - Create [macOS disk images (DMGs)](https://goreleaser.com/customization/dmg);
 - Create [Windows installers](https://goreleaser.com/customization/msi);
 - Use `goreleaser release --single-target` to build the whole pipeline for a
