@@ -240,15 +240,6 @@ type Homebrew struct {
 	// Pro-only
 	AlternativeNames []string `yaml:"alternative_names,omitempty" json:"alternative_names,omitempty"`
 	App              string   `yaml:"app,omitempty" json:"app,omitempty"`
-
-	// Deprecated: use Repository instead.
-	Tap RepoRef `yaml:"tap,omitempty" json:"tap,omitempty" jsonschema:"deprecated=true,description=use repository instead"`
-
-	// Deprecated: use Service instead.
-	Plist string `yaml:"plist,omitempty" json:"plist,omitempty" jsonschema:"deprecated=true,description=use service instead"`
-
-	// Deprecated: use Directory instead.
-	Folder string `yaml:"folder,omitempty" json:"folder,omitempty" jsonschema:"deprecated=true"`
 }
 
 type Nix struct {
@@ -347,9 +338,6 @@ type Krew struct {
 	Goarm                 string       `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
-
-	// Deprecated: use Repository instead.
-	Index RepoRef `yaml:"index,omitempty" json:"index,omitempty" jsonschema:"deprecated=true,description=use repository instead"`
 }
 
 // Ko contains the ko section
@@ -396,12 +384,6 @@ type Scoop struct {
 
 	// pro-only
 	Use string `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=archive,enum=msi,default=archive"`
-
-	// Deprecated: use Repository instead.
-	Bucket RepoRef `yaml:"bucket,omitempty" json:"bucket,omitempty" jsonschema:"deprecated=true,description=use repository instead"`
-
-	// Deprecated: use Directory instead.
-	Folder string `yaml:"folder,omitempty" json:"folder,omitempty" jsonschema:"deprecated=true"`
 }
 
 // CommitAuthor is the author of a Git commit.
@@ -659,12 +641,6 @@ type Archive struct {
 	// pro only
 	Hooks          ArchiveHooks    `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 	TemplatedFiles []TemplatedFile `yaml:"templated_files,omitempty" json:"templated_files,omitempty"`
-
-	// Deprecated: don't need to set this anymore.
-	RLCP string `yaml:"rlcp,omitempty" json:"rlcp,omitempty"  jsonschema:"oneof_type=string;boolean,deprecated=true,description=you can now remove this"`
-
-	// Deprecated: use StripBinaryDirectory instead.
-	StripParentBinaryFolder bool `yaml:"strip_parent_binary_folder,omitempty" json:"strip_parent_binary_folder,omitempty" jsonschema:"deprecated=true"`
 }
 
 type ReleaseNotesMode string
@@ -1099,9 +1075,6 @@ type Changelog struct {
 	Divider string           `yaml:"divider,omitempty" json:"divider,omitempty"`
 	Abbrev  int              `yaml:"abbrev,omitempty" json:"abbrev,omitempty"`
 	Paths   []string         `yaml:"paths,omitempty" json:"paths,omitempty"`
-
-	// Deprecated: use disable instead.
-	Skip string `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean,deprecated=true,description=use disable instead"`
 }
 
 // ChangelogGroup holds the grouping criteria for the changelog.
@@ -1179,15 +1152,6 @@ type Blob struct {
 	ContentDisposition string      `yaml:"content_disposition,omitempty" json:"content_disposition,omitempty"`
 	IncludeMeta        bool        `yaml:"include_meta,omitempty" json:"include_meta,omitempty"`
 
-	// Deprecated: use disable_ssl instead
-	OldDisableSSL bool `yaml:"disableSSL,omitempty" json:"disableSSL,omitempty" jsonschema:"deprecated=true,description=use disable_ssl instead"` // nolint:tagliatelle
-
-	// Deprecated: use kms_key instead
-	OldKMSKey string `yaml:"kmskey,omitempty" json:"kmskey,omitempty" jsonschema:"deprecated=true,description=use kms_key instead"`
-
-	// Deprecated: use Directory instead.
-	Folder string `yaml:"folder,omitempty" json:"folder,omitempty" jsonschema:"deprecated=true"`
-
 	// pro-only
 	TemplatedExtraFiles []TemplatedExtraFile `yaml:"templated_extra_files,omitempty" json:"templated_extra_files,omitempty"`
 }
@@ -1242,9 +1206,6 @@ type Source struct {
 
 	// pro only
 	TemplatedFiles []TemplatedFile `yaml:"templated_files,omitempty" json:"templated_files,omitempty"`
-
-	// Deprecated: don't need to set this anymore.
-	RLCP string `yaml:"rlcp,omitempty" json:"rlcp,omitempty" jsonschema:"oneof_type=string;boolean,deprecated=true,description=you can now remove this"`
 }
 
 // Project includes all project configuration.
@@ -1317,12 +1278,6 @@ type Project struct {
 	Nightly    Nightly                `yaml:"nightly,omitempty" json:"nightly,omitempty"`
 	Furies     []Fury                 `yaml:"furies,omitempty" json:"furies,omitempty"`
 	DockerHubs []DockerHub            `yaml:"dockerhub,omitempty" json:"dockerhub,omitempty"`
-
-	// Deprecated: use Scoops instead.
-	Scoop Scoop `yaml:"scoop,omitempty" json:"scoop,omitempty" jsonschema:"deprecated=true,description=use scoops instead"`
-
-	// Deprecated: use Builds instead.
-	SingleBuild Build `yaml:"build,omitempty" json:"build,omitempty" jsonschema:"deprecated=true,description=use builds instead"`
 }
 
 type TemplateFile struct {
@@ -1395,9 +1350,6 @@ type Fury struct {
 	Formats    []string `yaml:"formats,omitempty" json:"formats,omitempty"`
 	SecretName string   `yaml:"secret_name,omitempty" json:"secret_name,omitempty"`
 	Disable    string   `yaml:"disable,omitempty" json:"disable,omitempty"`
-
-	// Deprecated
-	Skip string `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean,deprecated=true,description=use disable instead"`
 }
 
 type Mastodon struct {
