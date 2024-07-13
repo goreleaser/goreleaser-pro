@@ -467,8 +467,8 @@ type Build struct {
 	UnproxiedMain   string          `yaml:"-" json:"-"` // used by gomod.proxy
 	UnproxiedDir    string          `yaml:"-" json:"-"` // used by gomod.proxy
 
-	BuildDetails          `yaml:",inline" json:",inline"` // nolint: tagliatelle
-	BuildDetailsOverrides []BuildDetailsOverride          `yaml:"overrides,omitempty" json:"overrides,omitempty"`
+	BuildDetails          `yaml:",inline" json:",inline"`
+	BuildDetailsOverrides []BuildDetailsOverride `yaml:"overrides,omitempty" json:"overrides,omitempty"`
 
 	// pro options
 	PreBuilt PreBuiltOptions `yaml:"prebuilt,omitempty" json:"prebuilt,omitempty"`
@@ -479,12 +479,12 @@ type PreBuiltOptions struct { // pro only
 }
 
 type BuildDetailsOverride struct {
-	Goos         string                          `yaml:"goos,omitempty" json:"goos,omitempty"`
-	Goarch       string                          `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm        string                          `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
-	Gomips       string                          `yaml:"gomips,omitempty" json:"gomips,omitempty"`
-	Goamd64      string                          `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
-	BuildDetails `yaml:",inline" json:",inline"` // nolint: tagliatelle
+	Goos         string `yaml:"goos,omitempty" json:"goos,omitempty"`
+	Goarch       string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
+	Goarm        string `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
+	Gomips       string `yaml:"gomips,omitempty" json:"gomips,omitempty"`
+	Goamd64      string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	BuildDetails `yaml:",inline" json:",inline"`
 }
 
 type BuildDetails struct {
@@ -702,8 +702,8 @@ type TemplatedExtraFile struct {
 
 // NFPM config.
 type NFPM struct {
-	NFPMOverridables `yaml:",inline" json:",inline"` // nolint: tagliatelle
-	Overrides        map[string]NFPMOverridables     `yaml:"overrides,omitempty" json:"overrides,omitempty"`
+	NFPMOverridables `yaml:",inline" json:",inline"`
+	Overrides        map[string]NFPMOverridables `yaml:"overrides,omitempty" json:"overrides,omitempty"`
 
 	ID          string   `yaml:"id,omitempty" json:"id,omitempty"`
 	Builds      []string `yaml:"builds,omitempty" json:"builds,omitempty"`
@@ -836,6 +836,23 @@ type NFPMArchLinux struct {
 	Scripts  NFPMArchLinuxScripts `yaml:"scripts,omitempty" json:"scripts,omitempty"`
 }
 
+// NFPMIPK is custom config only available on ipk packages.
+type NFPMIPKAlternative struct {
+	Priority int    `yaml:"priority,omitempty" json:"priority,omitempty"`
+	Target   string `yaml:"target,omitempty" json:"target,omitempty"`
+	LinkName string `yaml:"link_name,omitempty" json:"link_name,omitempty"`
+}
+
+type NFPMIPK struct {
+	ABIVersion    string               `yaml:"abi_version,omitempty" json:"abi_version,omitempty"`
+	Alternatives  []NFPMIPKAlternative `yaml:"alternatives,omitempty" json:"alternatives,omitempty"`
+	AutoInstalled bool                 `yaml:"auto_installed,omitempty" json:"auto_installed,omitempty"`
+	Essential     bool                 `yaml:"essential,omitempty" json:"essential,omitempty"`
+	Predepends    []string             `yaml:"predepends,omitempty" json:"predepends,omitempty"`
+	Tags          []string             `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Fields        map[string]string    `yaml:"fields,omitempty" json:"fields,omitempty"`
+}
+
 // NFPMOverridables is used to specify per package format settings.
 type NFPMOverridables struct {
 	FileNameTemplate string        `yaml:"file_name_template,omitempty" json:"file_name_template,omitempty"`
@@ -857,6 +874,7 @@ type NFPMOverridables struct {
 	Deb              NFPMDeb       `yaml:"deb,omitempty" json:"deb,omitempty"`
 	APK              NFPMAPK       `yaml:"apk,omitempty" json:"apk,omitempty"`
 	ArchLinux        NFPMArchLinux `yaml:"archlinux,omitempty" json:"archlinux,omitempty"`
+	IPK              NFPMIPK       `yaml:"ipk,omitempty" json:"ipk,omitempty"`
 
 	// pro onlu
 	TemplatedContents NFPMContents `yaml:"templated_contents,omitempty" json:"templated_contents,omitempty"`
@@ -1074,7 +1092,9 @@ type Changelog struct {
 	Groups  []ChangelogGroup `yaml:"groups,omitempty" json:"groups,omitempty"`
 	Divider string           `yaml:"divider,omitempty" json:"divider,omitempty"`
 	Abbrev  int              `yaml:"abbrev,omitempty" json:"abbrev,omitempty"`
-	Paths   []string         `yaml:"paths,omitempty" json:"paths,omitempty"`
+
+	// Pro-only.
+	Paths []string `yaml:"paths,omitempty" json:"paths,omitempty"`
 }
 
 // ChangelogGroup holds the grouping criteria for the changelog.
@@ -1109,6 +1129,15 @@ type Before struct {
 // After is the global "after" config.
 type After struct { // pro only
 	Hooks Hooks `yaml:"hooks,omitempty" json:"hooks,omitempty"`
+}
+
+type BeforePublishHook struct {
+	IDs       []string `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Dir       string   `yaml:"dir,omitempty" json:"dir,omitempty"`
+	Cmd       string   `yaml:"cmd,omitempty" json:"cmd,omitempty"`
+	Env       []string `yaml:"env,omitempty" json:"env,omitempty"`
+	Artifacts []string `yaml:"artifacts,omitempty" json:"artifacts,omitempty" jsonschema:"enum=image,enum=checksum,enum=source,enum=package,enum=archive,enum=binary,enum=sbom,enum=installer,enum=diskimage"`
+	Output    bool     `yaml:"output,omitempty" json:"output,omitempty"`
 }
 
 // pro-only
@@ -1151,6 +1180,7 @@ type Blob struct {
 	CacheControl       []string    `yaml:"cache_control,omitempty" json:"cache_control,omitempty"`
 	ContentDisposition string      `yaml:"content_disposition,omitempty" json:"content_disposition,omitempty"`
 	IncludeMeta        bool        `yaml:"include_meta,omitempty" json:"include_meta,omitempty"`
+	ExtraFilesOnly     bool        `yaml:"extra_files_only,omitempty" json:"extra_files_only,omitempty"`
 
 	// pro-only
 	TemplatedExtraFiles []TemplatedExtraFile `yaml:"templated_extra_files,omitempty" json:"templated_extra_files,omitempty"`
@@ -1174,9 +1204,12 @@ type Upload struct {
 	Meta               bool              `yaml:"meta,omitempty" json:"meta,omitempty"`
 	CustomArtifactName bool              `yaml:"custom_artifact_name,omitempty" json:"custom_artifact_name,omitempty"`
 	CustomHeaders      map[string]string `yaml:"custom_headers,omitempty" json:"custom_headers,omitempty"`
+	ExtraFiles         []ExtraFile       `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	ExtraFilesOnly     bool              `yaml:"extra_files_only,omitempty" json:"extra_files_only,omitempty"`
 
 	// Pro-only
-	Matrix Matrix `yaml:"matrix,omitempty" json:"matrix,omitempty"`
+	Matrix              Matrix               `yaml:"matrix,omitempty" json:"matrix,omitempty"`
+	TemplatedExtraFiles []TemplatedExtraFile `yaml:"templated_extra_files,omitempty" json:"templated_extra_files,omitempty"`
 }
 
 // Publisher configuration.
@@ -1210,7 +1243,7 @@ type Source struct {
 
 // Project includes all project configuration.
 type Project struct {
-	Version         int              `yaml:"version,omitempty" json:"version,omitempty" jsonschema:"enum=1,default=1"`
+	Version         int              `yaml:"version,omitempty" json:"version,omitempty" jsonschema:"enum=2,default=2"`
 	ProjectName     string           `yaml:"project_name,omitempty" json:"project_name,omitempty"`
 	Env             []string         `yaml:"env,omitempty" json:"env,omitempty"`
 	Release         Release          `yaml:"release,omitempty" json:"release,omitempty"`
@@ -1271,13 +1304,15 @@ type Project struct {
 	GiteaURLs GiteaURLs `yaml:"gitea_urls,omitempty" json:"gitea_urls,omitempty"`
 
 	// Pro-only options
-	Includes   []Include              `yaml:"includes,omitempty" json:"includes,omitempty"`
-	Variables  map[string]interface{} `yaml:"variables,omitempty" json:"variables,omitempty"`
-	Monorepo   Monorepo               `yaml:"monorepo,omitempty" json:"monorepo,omitempty"`
-	Partial    Partial                `yaml:"partial,omitempty" json:"partial,omitempty"`
-	Nightly    Nightly                `yaml:"nightly,omitempty" json:"nightly,omitempty"`
-	Furies     []Fury                 `yaml:"furies,omitempty" json:"furies,omitempty"`
-	DockerHubs []DockerHub            `yaml:"dockerhub,omitempty" json:"dockerhub,omitempty"`
+	Includes      []Include              `yaml:"includes,omitempty" json:"includes,omitempty"`
+	Variables     map[string]interface{} `yaml:"variables,omitempty" json:"variables,omitempty"`
+	Monorepo      Monorepo               `yaml:"monorepo,omitempty" json:"monorepo,omitempty"`
+	Partial       Partial                `yaml:"partial,omitempty" json:"partial,omitempty"`
+	Nightly       Nightly                `yaml:"nightly,omitempty" json:"nightly,omitempty"`
+	Furies        []Fury                 `yaml:"furies,omitempty" json:"furies,omitempty"`
+	Cloudsmiths   []Cloudsmith           `yaml:"cloudsmiths,omitempty" json:"cloudsmiths,omitempty"`
+	DockerHubs    []DockerHub            `yaml:"dockerhub,omitempty" json:"dockerhub,omitempty"`
+	BeforePublish []BeforePublishHook    `yaml:"before_publish,omitempty" json:"before_publish,omitempty"`
 }
 
 type TemplateFile struct {
@@ -1288,7 +1323,14 @@ type TemplateFile struct {
 }
 
 type ProjectMetadata struct {
-	ModTimestamp string `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
+	ModTimestamp     string   `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
+	Description      string   `yaml:"description,omitempty" json:"description,omitempty"`
+	FullDescriptionS string   `yaml:"-" json:"-"`
+	Homepage         string   `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	License          string   `yaml:"license,omitempty" json:"license,omitempty"`
+	Maintainers      []string `yaml:"maintainers,omitempty" json:"maintainers,omitempty"`
+
+	FullDescription IncludedMarkdown `yaml:"full_description,omitempty" json:"full_description,omitempty"`
 }
 
 type GoMod struct {
@@ -1345,11 +1387,21 @@ type DockerHub struct {
 }
 
 type Fury struct {
-	Account    string   `yaml:"account,omitempty" json:"account,omitempty"`
+	Account    string   `yaml:"account" json:"account"`
 	IDs        []string `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Formats    []string `yaml:"formats,omitempty" json:"formats,omitempty"`
 	SecretName string   `yaml:"secret_name,omitempty" json:"secret_name,omitempty"`
 	Disable    string   `yaml:"disable,omitempty" json:"disable,omitempty"`
+}
+
+type Cloudsmith struct {
+	IDs           []string          `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Organization  string            `yaml:"organization" json:"organization"`
+	Repository    string            `yaml:"repository" json:"repository"`
+	Formats       []string          `yaml:"formats,omitempty" json:"formats,omitempty"`
+	SecretName    string            `yaml:"secret_name,omitempty" json:"secret_name,omitempty"`
+	Disable       string            `yaml:"disable,omitempty" json:"disable,omitempty"`
+	Distributions map[string]string `yaml:"distributions" json:"distributions"`
 }
 
 type Mastodon struct {
