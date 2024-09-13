@@ -179,6 +179,8 @@ func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(interface{}) error) er
 
 	a.Name = dep.Name
 	a.Type = dep.Type
+	a.Version = dep.Version
+	a.OS = dep.OS
 
 	return nil
 }
@@ -459,10 +461,10 @@ type Build struct {
 	Hooks           BuildHookConfig `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty"`
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
-	Skip            bool            `yaml:"skip,omitempty" json:"skip,omitempty"`
+	Skip            string          `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
 	GoBinary        string          `yaml:"gobinary,omitempty" json:"gobinary,omitempty"`
 	Command         string          `yaml:"command,omitempty" json:"command,omitempty"`
-	NoUniqueDistDir bool            `yaml:"no_unique_dist_dir,omitempty" json:"no_unique_dist_dir,omitempty"`
+	NoUniqueDistDir string          `yaml:"no_unique_dist_dir,omitempty" json:"no_unique_dist_dir,omitempty" jsonschema:"oneof_type=string;boolean"`
 	NoMainCheck     bool            `yaml:"no_main_check,omitempty" json:"no_main_check,omitempty"`
 	UnproxiedMain   string          `yaml:"-" json:"-"` // used by gomod.proxy
 	UnproxiedDir    string          `yaml:"-" json:"-"` // used by gomod.proxy
@@ -707,7 +709,7 @@ type NFPM struct {
 
 	ID          string   `yaml:"id,omitempty" json:"id,omitempty"`
 	Builds      []string `yaml:"builds,omitempty" json:"builds,omitempty"`
-	Formats     []string `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=termux.deb,enum=archlinux"`
+	Formats     []string `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=termux.deb,enum=archlinux,enum=ipk"`
 	Section     string   `yaml:"section,omitempty" json:"section,omitempty"`
 	Priority    string   `yaml:"priority,omitempty" json:"priority,omitempty"`
 	Vendor      string   `yaml:"vendor,omitempty" json:"vendor,omitempty"`
@@ -900,6 +902,7 @@ type Sign struct {
 	Signature   string   `yaml:"signature,omitempty" json:"signature,omitempty"`
 	Artifacts   string   `yaml:"artifacts,omitempty" json:"artifacts,omitempty" jsonschema:"enum=all,enum=manifests,enum=images,enum=checksum,enum=source,enum=package,enum=archive,enum=binary,enum=sbom,enum=installer,enum=diskimage"`
 	IDs         []string `yaml:"ids,omitempty" json:"ids,omitempty"`
+	If          string   `yaml:"if,omitempty" json:"if,omitempty"`
 	Stdin       *string  `yaml:"stdin,omitempty" json:"stdin,omitempty"`
 	StdinFile   string   `yaml:"stdin_file,omitempty" json:"stdin_file,omitempty"`
 	Env         []string `yaml:"env,omitempty" json:"env,omitempty"`
@@ -989,7 +992,7 @@ type Snapcraft struct {
 	License          string                             `yaml:"license,omitempty" json:"license,omitempty"`
 	Grade            string                             `yaml:"grade,omitempty" json:"grade,omitempty" jsonschema:"enum=stable,enum=devel,default=stable"`
 	ChannelTemplates []string                           `yaml:"channel_templates,omitempty" json:"channel_templates,omitempty"`
-	Confinement      string                             `yaml:"confinement,omitempty" json:"confinement,omitempty" jsonschema:"enum=strict,enum=classic,enum=devmode,classic=strict"`
+	Confinement      string                             `yaml:"confinement,omitempty" json:"confinement,omitempty" jsonschema:"enum=strict,enum=classic,enum=devmode,default=strict"`
 	Assumes          []string                           `yaml:"assumes,omitempty" json:"assumes,omitempty"`
 	Layout           map[string]SnapcraftLayoutMetadata `yaml:"layout,omitempty" json:"layout,omitempty"`
 	Apps             map[string]SnapcraftAppMetadata    `yaml:"apps,omitempty" json:"apps,omitempty"`
@@ -1012,11 +1015,15 @@ type SnapcraftExtraFiles struct {
 
 // Snapshot config.
 type Snapshot struct {
-	NameTemplate string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
+	// Deprecated: use VersionTemplate.
+	NameTemplate    string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
+	VersionTemplate string `yaml:"version_template,omitempty" json:"version_template,omitempty"`
 }
 
 // Nightly config.
 type Nightly struct { // pro only
+	VersionTemplate string `yaml:"version_template,omitempty" json:"version_template,omitempty"`
+	// Deprecated: use VersionTemplate.
 	NameTemplate      string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 	TagName           string `yaml:"tag_name,omitempty" json:"tag_name,omitempty"`
 	PublishRelease    bool   `yaml:"publish_release,omitempty" json:"publish_release,omitempty"`
@@ -1184,6 +1191,7 @@ type Blob struct {
 
 	// pro-only
 	TemplatedExtraFiles []TemplatedExtraFile `yaml:"templated_extra_files,omitempty" json:"templated_extra_files,omitempty"`
+	If                  string               `yaml:"if,omitempty" json:"if,omitempty"`
 }
 
 // Upload configuration.
@@ -1274,6 +1282,7 @@ type Project struct {
 	Signs           []Sign           `yaml:"signs,omitempty" json:"signs,omitempty"`
 	Notarize        Notarize         `yaml:"notarize,omitempty" json:"notarize,omitempty"`
 	DockerSigns     []Sign           `yaml:"docker_signs,omitempty" json:"docker_signs,omitempty"`
+	BinarySigns     []Sign           `yaml:"binary_signs,omitempty" json:"binary_signs,omitempty"`
 	EnvFiles        EnvFiles         `yaml:"env_files,omitempty" json:"env_files,omitempty"`
 	Before          Before           `yaml:"before,omitempty" json:"before,omitempty"`
 	After           After            `yaml:"after,omitempty" json:"after,omitempty"`
