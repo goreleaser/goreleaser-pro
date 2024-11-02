@@ -308,7 +308,7 @@ type Winget struct {
 	ShortDescription      string             `yaml:"short_description" json:"short_description"`
 	Description           string             `yaml:"description,omitempty" json:"description,omitempty"`
 	Homepage              string             `yaml:"homepage,omitempty" json:"homepage,omitempty"`
-	License               string             `yaml:"license" json:"license"`
+	License               string             `yaml:"license,omitempty" json:"license,omitempty"`
 	LicenseURL            string             `yaml:"license_url,omitempty" json:"license_url,omitempty"`
 	ReleaseNotes          string             `yaml:"release_notes,omitempty" json:"release_notes,omitempty"`
 	ReleaseNotesURL       string             `yaml:"release_notes_url,omitempty" json:"release_notes_url,omitempty"`
@@ -350,6 +350,8 @@ type Ko struct {
 	WorkingDir          string            `yaml:"working_dir,omitempty" json:"working_dir,omitempty"`
 	BaseImage           string            `yaml:"base_image,omitempty" json:"base_image,omitempty"`
 	Labels              map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
+	Annotations         map[string]string `yaml:"annotations,omitempty" json:"annotations,omitempty"`
+	User                string            `yaml:"user,omitempty" json:"user,omitempty"`
 	Repository          string            `yaml:"repository,omitempty" json:"repository,omitempty"`
 	Platforms           []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
 	Tags                []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
@@ -402,11 +404,15 @@ type BuildHooks struct { // renamed on pro
 
 // IgnoredBuild represents a build ignored by the user.
 type IgnoredBuild struct {
-	Goos    string `yaml:"goos,omitempty" json:"goos,omitempty"`
-	Goarch  string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm   string `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
-	Gomips  string `yaml:"gomips,omitempty" json:"gomips,omitempty"`
-	Goamd64 string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	Goos      string `yaml:"goos,omitempty" json:"goos,omitempty"`
+	Goarch    string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
+	Goamd64   string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	Go386     string `yaml:"go386,omitempty" json:"go386,omitempty"`
+	Goarm     string `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
+	Goarm64   string `yaml:"goarm64,omitempty" json:"goarm64,omitempty"`
+	Gomips    string `yaml:"gomips,omitempty" json:"gomips,omitempty"`
+	Goppc64   string `yaml:"goppc64,omitempty" json:"goppc64,omitempty"`
+	Goriscv64 string `yaml:"goriscv64,omitempty" json:"goriscv64,omitempty"`
 }
 
 // StringArray is a wrapper for an array of strings.
@@ -450,9 +456,13 @@ type Build struct {
 	ID              string          `yaml:"id,omitempty" json:"id,omitempty"`
 	Goos            []string        `yaml:"goos,omitempty" json:"goos,omitempty"`
 	Goarch          []string        `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm           []string        `yaml:"goarm,omitempty" json:"goarm,omitempty"`
-	Gomips          []string        `yaml:"gomips,omitempty" json:"gomips,omitempty"`
 	Goamd64         []string        `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	Go386           []string        `yaml:"go386,omitempty" json:"go386,omitempty"`
+	Goarm           []string        `yaml:"goarm,omitempty" json:"goarm,omitempty"`
+	Goarm64         []string        `yaml:"goarm64,omitempty" json:"goarm64,omitempty"`
+	Gomips          []string        `yaml:"gomips,omitempty" json:"gomips,omitempty"`
+	Goppc64         []string        `yaml:"goppc64,omitempty" json:"goppc64,omitempty"`
+	Goriscv64       []string        `yaml:"goriscv64,omitempty" json:"goriscv64,omitempty"`
 	Targets         []string        `yaml:"targets,omitempty" json:"targets,omitempty"`
 	Ignore          []IgnoredBuild  `yaml:"ignore,omitempty" json:"ignore,omitempty"`
 	Dir             string          `yaml:"dir,omitempty" json:"dir,omitempty"`
@@ -696,6 +706,23 @@ type ExtraFile struct {
 	NameTemplate string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 }
 
+// UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
+func (f *ExtraFile) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	type t ExtraFile
+	var str string
+	if err := unmarshal(&str); err == nil {
+		*f = ExtraFile{Glob: str}
+		return nil
+	}
+
+	var file t
+	if err := unmarshal(&file); err != nil {
+		return err
+	}
+	*f = ExtraFile(file)
+	return nil
+}
+
 // TemplatedExtraFile on a release.
 type TemplatedExtraFile struct {
 	Source      string `yaml:"src,omitempty" json:"src,omitempty"`
@@ -709,6 +736,7 @@ type NFPM struct {
 
 	ID          string   `yaml:"id,omitempty" json:"id,omitempty"`
 	Builds      []string `yaml:"builds,omitempty" json:"builds,omitempty"`
+	If          string   `yaml:"if,omitempty" json:"if,omitempty"`
 	Formats     []string `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=termux.deb,enum=archlinux,enum=ipk"`
 	Section     string   `yaml:"section,omitempty" json:"section,omitempty"`
 	Priority    string   `yaml:"priority,omitempty" json:"priority,omitempty"`
@@ -1160,14 +1188,30 @@ type MSI struct {
 }
 
 // pro-only
-type DMG struct {
+type AppBundle struct {
 	ID           string   `yaml:"id,omitempty" json:"id,omitempty"`
-	Name         string   `yaml:"name" json:"name"`
+	Name         string   `yaml:"name,omitempty" json:"name,omitempty"`
 	IDs          []string `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Goamd64      string   `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
-	Files        []string `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
-	Replace      bool     `yaml:"replace,omitempty" json:"replace,omitempty"`
+	If           string   `yaml:"if,omitempty" json:"if,omitempty"`
 	ModTimestamp string   `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
+	Icon         string   `yaml:"icon" json:"icon"`
+	Bundle       string   `yaml:"bundle" json:"bundle"`
+}
+
+// pro-only
+type DMG struct {
+	ID           string      `yaml:"id,omitempty" json:"id,omitempty"`
+	Name         string      `yaml:"name" json:"name"`
+	IDs          []string    `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Goamd64      string      `yaml:"goamd64,omitempty" json:"goamd64,omitempty"` // TODO: deprecate this
+	Files        []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	Replace      bool        `yaml:"replace,omitempty" json:"replace,omitempty"`
+	ModTimestamp string      `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
+
+	// v2.4+
+	If             string               `yaml:"if,omitempty" json:"if,omitempty"`
+	Use            string               `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=enum=binary,enum=appbundle"`
+	TemplatedFiles []TemplatedExtraFile `yaml:"templated_extra_files,omitempty" json:"templated_extra_files,omitempty"`
 }
 
 // Blob contains config for GO CDK blob.
@@ -1260,6 +1304,7 @@ type Project struct {
 	Nix             []Nix            `yaml:"nix,omitempty" json:"nix,omitempty"`
 	Winget          []Winget         `yaml:"winget,omitempty" json:"winget,omitempty"`
 	MSI             []MSI            `yaml:"msi,omitempty" json:"msi,omitempty"`
+	AppBundles      []AppBundle      `yaml:"app_bundles,omitempty" json:"app_bundles,omitempty"`
 	DMG             []DMG            `yaml:"dmg,omitempty" json:"dmg,omitempty"`
 	AURs            []AUR            `yaml:"aurs,omitempty" json:"aurs,omitempty"`
 	Krews           []Krew           `yaml:"krews,omitempty" json:"krews,omitempty"`
