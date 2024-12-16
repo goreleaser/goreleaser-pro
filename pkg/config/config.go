@@ -211,6 +211,36 @@ type AUR struct {
 	Directory             string       `yaml:"directory,omitempty" json:"directory,omitempty"`
 }
 
+type AURSource struct {
+	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
+	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
+	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
+	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
+	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
+	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
+	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
+	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
+	Maintainers           []string     `yaml:"maintainers,omitempty" json:"maintainers,omitempty"`
+	Contributors          []string     `yaml:"contributors,omitempty" json:"contributors,omitempty"`
+	Arches                []string     `yaml:"arches,omitempty" json:"arches,omitempty"`
+	Provides              []string     `yaml:"provides,omitempty" json:"provides,omitempty"`
+	Conflicts             []string     `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
+	Depends               []string     `yaml:"depends,omitempty" json:"depends,omitempty"`
+	OptDepends            []string     `yaml:"optdepends,omitempty" json:"optdepends,omitempty"`
+	MakeDepends           []string     `yaml:"makedepends,omitempty" json:"makedepends,omitempty"`
+	Backup                []string     `yaml:"backup,omitempty" json:"backup,omitempty"`
+	Rel                   string       `yaml:"rel,omitempty" json:"rel,omitempty"`
+	Prepare               string       `yaml:"prepare,omitempty" json:"prepare,omitempty"`
+	Build                 string       `yaml:"build,omitempty" json:"build,omitempty"`
+	Package               string       `yaml:"package,omitempty" json:"package,omitempty"`
+	GitURL                string       `yaml:"git_url,omitempty" json:"git_url,omitempty"`
+	GitSSHCommand         string       `yaml:"git_ssh_command,omitempty" json:"git_ssh_command,omitempty"`
+	PrivateKey            string       `yaml:"private_key,omitempty" json:"private_key,omitempty"`
+	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	Directory             string       `yaml:"directory,omitempty" json:"directory,omitempty"`
+}
+
 // Homebrew contains the brew section.
 type Homebrew struct {
 	Name                  string               `yaml:"name,omitempty" json:"name,omitempty"`
@@ -352,7 +382,8 @@ type Ko struct {
 	Labels              map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
 	Annotations         map[string]string `yaml:"annotations,omitempty" json:"annotations,omitempty"`
 	User                string            `yaml:"user,omitempty" json:"user,omitempty"`
-	Repository          string            `yaml:"repository,omitempty" json:"repository,omitempty"`
+	Repository          string            `yaml:"repository,omitempty" json:"repository,omitempty" jsonschema:"deprecated=true"` // Deprecated: use [Repositories].
+	Repositories        []string          `yaml:"repositories,omitempty" json:"repositories,omitempty"`
 	Platforms           []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
 	Tags                []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
 	CreationTime        string            `yaml:"creation_time,omitempty" json:"creation_time,omitempty"`
@@ -469,10 +500,11 @@ type Build struct {
 	Main            string          `yaml:"main,omitempty" json:"main,omitempty"`
 	Binary          string          `yaml:"binary,omitempty" json:"binary,omitempty"`
 	Hooks           BuildHookConfig `yaml:"hooks,omitempty" json:"hooks,omitempty"`
-	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty"`
+	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty" jsonschema:"enum=,enum=go,enum=rust,enum=zig,enum=prebuilt"`
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
 	Skip            string          `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
-	GoBinary        string          `yaml:"gobinary,omitempty" json:"gobinary,omitempty"`
+	GoBinary        string          `yaml:"gobinary,omitempty" json:"gobinary,omitempty"` // Deprecated: use [Tool].
+	Tool            string          `yaml:"tool,omitempty" json:"tool,omitempty"`
 	Command         string          `yaml:"command,omitempty" json:"command,omitempty"`
 	NoUniqueDistDir string          `yaml:"no_unique_dist_dir,omitempty" json:"no_unique_dist_dir,omitempty" jsonschema:"oneof_type=string;boolean"`
 	NoMainCheck     bool            `yaml:"no_main_check,omitempty" json:"no_main_check,omitempty"`
@@ -491,8 +523,8 @@ type PreBuiltOptions struct { // pro only
 }
 
 type BuildDetailsOverride struct {
-	Goos         string `yaml:"goos,omitempty" json:"goos,omitempty"`
-	Goarch       string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
+	Goos         string `yaml:"goos" json:"goos"`
+	Goarch       string `yaml:"goarch" json:"goarch"`
 	Goamd64      string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Go386        string `yaml:"go386,omitempty" json:"go386,omitempty"`
 	Goarm64      string `yaml:"goarm64,omitempty" json:"goarm64,omitempty"`
@@ -675,6 +707,7 @@ type Release struct {
 	Gitea                  Repo        `yaml:"gitea,omitempty" json:"gitea,omitempty"`
 	Draft                  bool        `yaml:"draft,omitempty" json:"draft,omitempty"`
 	ReplaceExistingDraft   bool        `yaml:"replace_existing_draft,omitempty" json:"replace_existing_draft,omitempty"`
+	UseExistingDraft       bool        `yaml:"use_existing_draft,omitempty" json:"use_existing_draft,omitempty"`
 	TargetCommitish        string      `yaml:"target_commitish,omitempty" json:"target_commitish,omitempty"`
 	Tag                    string      `yaml:"tag,omitempty" json:"tag,omitempty"`
 	Disable                string      `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
@@ -899,7 +932,7 @@ type NFPMOverridables struct {
 	Recommends       []string      `yaml:"recommends,omitempty" json:"recommends,omitempty"`
 	Suggests         []string      `yaml:"suggests,omitempty" json:"suggests,omitempty"`
 	Conflicts        []string      `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
-	Umask            fs.FileMode   `yaml:"umask,omitempty" json:"umask,omitempty"`
+	Umask            fs.FileMode   `yaml:"umask,omitempty" json:"umask,omitempty" jsonschema:"oneof_type=string;integer"`
 	Replaces         []string      `yaml:"replaces,omitempty" json:"replaces,omitempty"`
 	Provides         []string      `yaml:"provides,omitempty" json:"provides,omitempty"`
 	Contents         NFPMContents  `yaml:"contents,omitempty" json:"contents,omitempty"`
@@ -1283,6 +1316,7 @@ type Publisher struct {
 
 	// pro-only
 	TemplatedExtraFiles []TemplatedExtraFile `yaml:"templated_extra_files,omitempty" json:"templated_extra_files,omitempty"`
+	If                  string               `yaml:"if,omitempty" json:"if,omitempty"`
 }
 
 // Source configuration.
@@ -1311,6 +1345,7 @@ type Project struct {
 	AppBundles      []AppBundle      `yaml:"app_bundles,omitempty" json:"app_bundles,omitempty"`
 	DMG             []DMG            `yaml:"dmg,omitempty" json:"dmg,omitempty"`
 	AURs            []AUR            `yaml:"aurs,omitempty" json:"aurs,omitempty"`
+	AURSources      []AURSource      `yaml:"aur_sources,omitempty" json:"aur_sources,omitempty"`
 	Krews           []Krew           `yaml:"krews,omitempty" json:"krews,omitempty"`
 	Kos             []Ko             `yaml:"kos,omitempty" json:"kos,omitempty"`
 	Scoops          []Scoop          `yaml:"scoops,omitempty" json:"scoops,omitempty"`
@@ -1422,12 +1457,13 @@ type Announce struct {
 }
 
 type Webhook struct {
-	Enabled         bool              `yaml:"enabled,omitempty" json:"enabled,omitempty"`
-	SkipTLSVerify   bool              `yaml:"skip_tls_verify,omitempty" json:"skip_tls_verify,omitempty"`
-	MessageTemplate string            `yaml:"message_template,omitempty" json:"message_template,omitempty"`
-	EndpointURL     string            `yaml:"endpoint_url,omitempty" json:"endpoint_url,omitempty"`
-	Headers         map[string]string `yaml:"headers,omitempty" json:"headers,omitempty"`
-	ContentType     string            `yaml:"content_type,omitempty" json:"content_type,omitempty"`
+	Enabled             bool              `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	SkipTLSVerify       bool              `yaml:"skip_tls_verify,omitempty" json:"skip_tls_verify,omitempty"`
+	MessageTemplate     string            `yaml:"message_template,omitempty" json:"message_template,omitempty"`
+	EndpointURL         string            `yaml:"endpoint_url,omitempty" json:"endpoint_url,omitempty"`
+	Headers             map[string]string `yaml:"headers,omitempty" json:"headers,omitempty"`
+	ContentType         string            `yaml:"content_type,omitempty" json:"content_type,omitempty"`
+	ExpectedStatusCodes []int             `yaml:"expected_status_codes,omitempty" json:"expected_status_codes,omitempty"`
 }
 
 type Twitter struct {
@@ -1597,7 +1633,7 @@ func (a SlackAttachment) MarshalJSON() ([]byte, error) {
 	return json.Marshal(a.Internal)
 }
 
-// Chocolatey contains the chocolatey section.
+// ChocolateyDependency represents Chocolatey dependency.
 type Chocolatey struct {
 	Name                     string                 `yaml:"name,omitempty" json:"name,omitempty"`
 	IDs                      []string               `yaml:"ids,omitempty" json:"ids,omitempty"`
