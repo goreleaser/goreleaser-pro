@@ -13,8 +13,12 @@ extra features.
 
 With GoReleaser Pro you can:
 
+- Further filter artifacts with `if` statements;
+- Easily create `alpine`, `apt`, and `yum` repositories with the [CloudSmith integration](https://goreleaser.com/customization/cloudsmith);
+- Have [global defaults for homepage, description, etc](https://goreleaser.com/customization/metadata);
+- Run [hooks before publishing](https://goreleaser.com/customization/beforepublish) artifacts;
 - Cross publish (e.g. releases to GitLab, pushes Homebrew Tap to GitHub);
-- Keep [DockerHub image descriptions up to date](/customization/dockerhub);
+- Keep [DockerHub image descriptions up to date](https://goreleaser.com/customization/dockerhub);
 - Create [macOS disk images (DMGs)](https://goreleaser.com/customization/dmg);
 - Create [Windows installers](https://goreleaser.com/customization/msi);
 - Use `goreleaser release --single-target` to build the whole pipeline for a
