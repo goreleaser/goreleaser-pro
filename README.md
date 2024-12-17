@@ -1,7 +1,7 @@
 <p align="center">
   <img alt="GoReleaser Logo" src="https://raw.githubusercontent.com/goreleaser/artwork/master/goreleaser-pro-round.png" height="200" />
   <h3 align="center">GoReleaser Pro</h3>
-  <p align="center">Deliver Go binaries as fast, easily and pro as possible.</p>
+  <p align="center">Release engineering, simplified.</p>
 </p>
 
 ---
