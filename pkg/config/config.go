@@ -500,10 +500,10 @@ type Build struct {
 	Main            string          `yaml:"main,omitempty" json:"main,omitempty"`
 	Binary          string          `yaml:"binary,omitempty" json:"binary,omitempty"`
 	Hooks           BuildHookConfig `yaml:"hooks,omitempty" json:"hooks,omitempty"`
-	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty" jsonschema:"enum=,enum=go,enum=rust,enum=zig,enum=prebuilt"`
+	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty" jsonschema:"enum=,enum=go,enum=rust,enum=zig,enum=bun,enum=deno,enum=prebuilt"`
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
 	Skip            string          `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
-	GoBinary        string          `yaml:"gobinary,omitempty" json:"gobinary,omitempty"` // Deprecated: use [Tool].
+	GoBinary        string          `yaml:"gobinary,omitempty" json:"gobinary,omitempty"` // Deprecated: use [ToolBinary].
 	Tool            string          `yaml:"tool,omitempty" json:"tool,omitempty"`
 	Command         string          `yaml:"command,omitempty" json:"command,omitempty"`
 	NoUniqueDistDir string          `yaml:"no_unique_dist_dir,omitempty" json:"no_unique_dist_dir,omitempty" jsonschema:"oneof_type=string;boolean"`
@@ -596,7 +596,10 @@ func (bh *Hook) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // FormatOverride is used to specify a custom format for a specific GOOS.
 type FormatOverride struct {
-	Goos   string `yaml:"goos,omitempty" json:"goos,omitempty"`
+	Goos    string      `yaml:"goos,omitempty" json:"goos,omitempty"`
+	Formats StringArray `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,enum=none,default=tar.gz"`
+
+	// Deprecated: use [Formats] instead.
 	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,enum=none,default=tar.gz"`
 }
 
@@ -678,7 +681,7 @@ type Archive struct {
 	Builds                    []string         `yaml:"builds,omitempty" json:"builds,omitempty"`
 	BuildsInfo                FileInfo         `yaml:"builds_info,omitempty" json:"builds_info,omitempty"`
 	NameTemplate              string           `yaml:"name_template,omitempty" json:"name_template,omitempty"`
-	Format                    string           `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,default=tar.gz"`
+	Formats                   StringArray      `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,default=tar.gz"`
 	FormatOverrides           []FormatOverride `yaml:"format_overrides,omitempty" json:"format_overrides,omitempty"`
 	WrapInDirectory           string           `yaml:"wrap_in_directory,omitempty" json:"wrap_in_directory,omitempty" jsonschema:"oneof_type=string;boolean"`
 	StripBinaryDirectory      bool             `yaml:"strip_binary_directory,omitempty" json:"strip_binary_directory,omitempty"`
@@ -689,6 +692,9 @@ type Archive struct {
 	// pro only
 	Hooks          ArchiveHooks    `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 	TemplatedFiles []TemplatedFile `yaml:"templated_files,omitempty" json:"templated_files,omitempty"`
+
+	// Deprecated: use [Formats] instead.
+	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,default=tar.gz"`
 }
 
 type ReleaseNotesMode string
@@ -785,7 +791,10 @@ type NFPM struct {
 	Bindir      string   `yaml:"bindir,omitempty" json:"bindir,omitempty"`
 	Libdirs     Libdirs  `yaml:"libdirs,omitempty" json:"libdirs,omitempty"`
 	Changelog   string   `yaml:"changelog,omitempty" json:"changelog,omitempty"`
+	MTime       string   `yaml:"mtime,omitempty" json:"mtime,omitempty" `
 	Meta        bool     `yaml:"meta,omitempty" json:"meta,omitempty"` // make package without binaries - only deps
+
+	ParsedMTime time.Time `yaml:"-" json:"-"`
 }
 
 type Libdirs struct {
@@ -935,7 +944,7 @@ type NFPMOverridables struct {
 	Umask            fs.FileMode   `yaml:"umask,omitempty" json:"umask,omitempty" jsonschema:"oneof_type=string;integer"`
 	Replaces         []string      `yaml:"replaces,omitempty" json:"replaces,omitempty"`
 	Provides         []string      `yaml:"provides,omitempty" json:"provides,omitempty"`
-	Contents         NFPMContents  `yaml:"contents,omitempty" json:"contents,omitempty"`
+	Contents         []NFPMContent `yaml:"contents,omitempty" json:"contents,omitempty"`
 	Scripts          NFPMScripts   `yaml:"scripts,omitempty" json:"scripts,omitempty"`
 	RPM              NFPMRPM       `yaml:"rpm,omitempty" json:"rpm,omitempty"`
 	Deb              NFPMDeb       `yaml:"deb,omitempty" json:"deb,omitempty"`
@@ -944,8 +953,17 @@ type NFPMOverridables struct {
 	IPK              NFPMIPK       `yaml:"ipk,omitempty" json:"ipk,omitempty"`
 
 	// pro onlu
-	TemplatedContents NFPMContents `yaml:"templated_contents,omitempty" json:"templated_contents,omitempty"`
-	TemplatedScripts  NFPMScripts  `yaml:"templated_scripts,omitempty" json:"templated_scripts,omitempty"`
+	TemplatedContents []NFPMContent `yaml:"templated_contents,omitempty" json:"templated_contents,omitempty"`
+	TemplatedScripts  NFPMScripts   `yaml:"templated_scripts,omitempty" json:"templated_scripts,omitempty"`
+}
+
+type NFPMContent struct {
+	Source      string   `yaml:"src,omitempty" json:"src,omitempty"`
+	Destination string   `yaml:"dst" json:"dst"`
+	Type        string   `yaml:"type,omitempty" json:"type,omitempty" jsonschema:"enum=symlink,enum=ghost,enum=config,enum=config|noreplace,enum=dir,enum=tree,enum=,default="`
+	Packager    string   `yaml:"packager,omitempty" json:"packager,omitempty"`
+	FileInfo    FileInfo `yaml:"file_info,omitempty" json:"file_info,omitempty"`
+	Expand      bool     `yaml:"expand,omitempty" json:"expand,omitempty"`
 }
 
 // SBOM config.
@@ -997,6 +1015,9 @@ type MacOSNotarize struct {
 type MacOSSign struct {
 	Certificate string `yaml:"certificate" json:"certificate"`
 	Password    string `yaml:"password" json:"password"`
+
+	// v2.6+
+	Entitlements string `yaml:"entitlements,omitempty" json:"entitlements,omitempty"`
 }
 
 // SnapcraftAppMetadata for the binaries that will be in the snap package.
@@ -1166,7 +1187,14 @@ type Changelog struct {
 	Abbrev  int              `yaml:"abbrev,omitempty" json:"abbrev,omitempty"`
 
 	// Pro-only.
-	Paths []string `yaml:"paths,omitempty" json:"paths,omitempty"`
+	Paths []string    `yaml:"paths,omitempty" json:"paths,omitempty"`
+	AI    ChangelogAI `yaml:"ai,omitempty" json:"ai,omitempty"`
+}
+
+type ChangelogAI struct {
+	Use    string           `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=anthropic,enum=openai,enum=ollama,default="`
+	Prompt IncludedMarkdown `yaml:"prompt,omitempty" json:"prompt,omitempty"`
+	Model  string           `yaml:"model,omitempty" json:"model,omitempty"`
 }
 
 // ChangelogGroup holds the grouping criteria for the changelog.
@@ -1222,6 +1250,7 @@ type MSI struct {
 	Files        []string `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
 	Replace      bool     `yaml:"replace,omitempty" json:"replace,omitempty"`
 	ModTimestamp string   `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
+	Extensions   []string `yaml:"extensions,omitempty" json:"extensions,omitempty"`
 }
 
 // pro-only
@@ -1233,6 +1262,10 @@ type AppBundle struct {
 	ModTimestamp string   `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
 	Icon         string   `yaml:"icon" json:"icon"`
 	Bundle       string   `yaml:"bundle" json:"bundle"`
+
+	// Since v2.6
+	Files          []File          `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	TemplatedFiles []TemplatedFile `yaml:"templated_extra_files,omitempty" json:"templated_extra_files,omitempty"`
 }
 
 // pro-only
@@ -1452,12 +1485,12 @@ type Announce struct {
 	LinkedIn       LinkedIn       `yaml:"linkedin,omitempty" json:"linkedin,omitempty"`
 	Telegram       Telegram       `yaml:"telegram,omitempty" json:"telegram,omitempty"`
 	Webhook        Webhook        `yaml:"webhook,omitempty" json:"webhook,omitempty"`
-	OpenCollective OpenCollective `yaml:"opencollective,omitempty" json:"opencolletive,omitempty"`
+	OpenCollective OpenCollective `yaml:"opencollective,omitempty" json:"opencollective,omitempty"`
 	Bluesky        Bluesky        `yaml:"bluesky,omitempty" json:"bluesky,omitempty"`
 }
 
 type Webhook struct {
-	Enabled             bool              `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled             string            `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	SkipTLSVerify       bool              `yaml:"skip_tls_verify,omitempty" json:"skip_tls_verify,omitempty"`
 	MessageTemplate     string            `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	EndpointURL         string            `yaml:"endpoint_url,omitempty" json:"endpoint_url,omitempty"`
@@ -1467,7 +1500,7 @@ type Webhook struct {
 }
 
 type Twitter struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 }
 
@@ -1499,13 +1532,13 @@ type Cloudsmith struct {
 }
 
 type Mastodon struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	Server          string `yaml:"server" json:"server"`
 }
 
 type Reddit struct {
-	Enabled       bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled       string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	ApplicationID string `yaml:"application_id,omitempty" json:"application_id,omitempty"`
 	Username      string `yaml:"username,omitempty" json:"username,omitempty"`
 	TitleTemplate string `yaml:"title_template,omitempty" json:"title_template,omitempty"`
@@ -1514,7 +1547,7 @@ type Reddit struct {
 }
 
 type Slack struct {
-	Enabled         bool              `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string            `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string            `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	Channel         string            `yaml:"channel,omitempty" json:"channel,omitempty"`
 	Username        string            `yaml:"username,omitempty" json:"username,omitempty"`
@@ -1525,7 +1558,7 @@ type Slack struct {
 }
 
 type Discord struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	Author          string `yaml:"author,omitempty" json:"author,omitempty"`
 	Color           string `yaml:"color,omitempty" json:"color,omitempty"`
@@ -1533,7 +1566,7 @@ type Discord struct {
 }
 
 type Teams struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	TitleTemplate   string `yaml:"title_template,omitempty" json:"title_template,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	Color           string `yaml:"color,omitempty" json:"color,omitempty"`
@@ -1541,7 +1574,7 @@ type Teams struct {
 }
 
 type Mattermost struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	TitleTemplate   string `yaml:"title_template,omitempty" json:"title_template,omitempty"`
 	Color           string `yaml:"color,omitempty" json:"color,omitempty"`
@@ -1552,7 +1585,7 @@ type Mattermost struct {
 }
 
 type SMTP struct {
-	Enabled            bool     `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled            string   `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Host               string   `yaml:"host,omitempty" json:"host,omitempty"`
 	Port               int      `yaml:"port,omitempty" json:"port,omitempty"`
 	Username           string   `yaml:"username,omitempty" json:"username,omitempty"`
@@ -1564,19 +1597,19 @@ type SMTP struct {
 }
 
 type LinkedIn struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 }
 
 type Telegram struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	ChatID          string `yaml:"chat_id,omitempty" json:"chat_id,omitempty" jsonschema:"oneof_type=string;integer"`
 	ParseMode       string `yaml:"parse_mode,omitempty" json:"parse_mode,omitempty" jsonschema:"enum=MarkdownV2,enum=HTML,default=MarkdownV2"`
 }
 
 type OpenCollective struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Slug            string `yaml:"slug,omitempty" json:"slug,omitempty"`
 	TitleTemplate   string `yaml:"title_template,omitempty" json:"title_template,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
@@ -1584,7 +1617,7 @@ type OpenCollective struct {
 
 // Bluesky represents the data required to announce to the Bluesky social network
 type Bluesky struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Username        string `yaml:"username,omitempty" json:"username,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 }
@@ -1633,7 +1666,7 @@ func (a SlackAttachment) MarshalJSON() ([]byte, error) {
 	return json.Marshal(a.Internal)
 }
 
-// ChocolateyDependency represents Chocolatey dependency.
+// Chocolatey contains the chocolatey section.
 type Chocolatey struct {
 	Name                     string                 `yaml:"name,omitempty" json:"name,omitempty"`
 	IDs                      []string               `yaml:"ids,omitempty" json:"ids,omitempty"`
@@ -1664,8 +1697,9 @@ type Chocolatey struct {
 	Use string `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=archive,enum=msi,default=archive"`
 }
 
-// ChcolateyDependency represents Chocolatey dependency.
+// ChocolateyDependency represents Chocolatey dependency.
 type ChocolateyDependency struct {
 	ID      string `yaml:"id,omitempty" json:"id,omitempty"`
 	Version string `yaml:"version,omitempty" json:"version,omitempty"`
 }
+
