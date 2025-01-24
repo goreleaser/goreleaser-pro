@@ -1280,7 +1280,7 @@ type DMG struct {
 
 	// v2.4+
 	If             string               `yaml:"if,omitempty" json:"if,omitempty"`
-	Use            string               `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=enum=binary,enum=appbundle"`
+	Use            string               `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=binary,enum=appbundle"`
 	TemplatedFiles []TemplatedExtraFile `yaml:"templated_extra_files,omitempty" json:"templated_extra_files,omitempty"`
 }
 
