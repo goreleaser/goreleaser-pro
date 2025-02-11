@@ -14,6 +14,7 @@ extra features.
 With GoReleaser Pro you can:
 
 - Further filter artifacts with `if` statements;
+- Create macOS [App Bundles](https://goreleaser.com/customization/app_bundles);
 - Easily create `alpine`, `apt`, and `yum` repositories with the [CloudSmith integration](https://goreleaser.com/customization/cloudsmith);
 - Have [global defaults for homepage, description, etc](https://goreleaser.com/customization/metadata);
 - Run [hooks before publishing](https://goreleaser.com/customization/beforepublish) artifacts;
