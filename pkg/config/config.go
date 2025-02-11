@@ -22,6 +22,7 @@ const (
 
 type Versioned struct {
 	Version int
+	Pro     bool
 }
 
 // Partial specifies how a build should be split when using `--split`.
@@ -503,7 +504,7 @@ type Build struct {
 	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty" jsonschema:"enum=,enum=go,enum=rust,enum=zig,enum=bun,enum=deno,enum=prebuilt"`
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
 	Skip            string          `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
-	GoBinary        string          `yaml:"gobinary,omitempty" json:"gobinary,omitempty"` // Deprecated: use [Tool].
+	GoBinary        string          `yaml:"gobinary,omitempty" json:"gobinary,omitempty"` // Deprecated: use [Build.Tool] instead.
 	Tool            string          `yaml:"tool,omitempty" json:"tool,omitempty"`
 	Command         string          `yaml:"command,omitempty" json:"command,omitempty"`
 	NoUniqueDistDir string          `yaml:"no_unique_dist_dir,omitempty" json:"no_unique_dist_dir,omitempty" jsonschema:"oneof_type=string;boolean"`
@@ -573,6 +574,7 @@ func (bhc *Hooks) UnmarshalYAML(unmarshal func(interface{}) error) error {
 type Hook struct {
 	Dir    string   `yaml:"dir,omitempty" json:"dir,omitempty"`
 	Cmd    string   `yaml:"cmd,omitempty" json:"cmd,omitempty"`
+	If     string   `yaml:"if,omitempty" json:"if,omitempty"`
 	Env    []string `yaml:"env,omitempty" json:"env,omitempty"`
 	Output bool     `yaml:"output,omitempty" json:"output,omitempty"`
 }
@@ -846,6 +848,7 @@ type NFPMRPM struct {
 type NFPMDebScripts struct {
 	Rules     string `yaml:"rules,omitempty" json:"rules,omitempty"`
 	Templates string `yaml:"templates,omitempty" json:"templates,omitempty"`
+	Config    string `yaml:"config,omitempty" json:"config,omitempty"`
 }
 
 // NFPMDebTriggers contains triggers only available for deb packages.
@@ -1001,7 +1004,7 @@ type MacOSSignNotarize struct {
 	IDs      []string      `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Enabled  string        `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Sign     MacOSSign     `yaml:"sign" json:"sign"`
-	Notarize MacOSNotarize `yaml:"notarize" json:"notarize"`
+	Notarize MacOSNotarize `yaml:"notarize,omitempty" json:"notarize,omitempty"`
 }
 
 type MacOSNotarize struct {
@@ -1251,6 +1254,9 @@ type MSI struct {
 	Replace      bool     `yaml:"replace,omitempty" json:"replace,omitempty"`
 	ModTimestamp string   `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
 	Extensions   []string `yaml:"extensions,omitempty" json:"extensions,omitempty"`
+
+	// 2.7+
+	Version string `yaml:"version,omitempty" json:"version,omitempty" jsonschema:"enum=v3,enum=v4"`
 }
 
 // pro-only
@@ -1328,6 +1334,7 @@ type Upload struct {
 	CustomHeaders      map[string]string `yaml:"custom_headers,omitempty" json:"custom_headers,omitempty"`
 	ExtraFiles         []ExtraFile       `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
 	ExtraFilesOnly     bool              `yaml:"extra_files_only,omitempty" json:"extra_files_only,omitempty"`
+	Skip               string            `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
 
 	// Pro-only
 	Matrix              Matrix               `yaml:"matrix,omitempty" json:"matrix,omitempty"`
@@ -1367,6 +1374,7 @@ type Source struct {
 // Project includes all project configuration.
 type Project struct {
 	Version         int              `yaml:"version,omitempty" json:"version,omitempty" jsonschema:"enum=2,default=2"`
+	Pro             bool             `yaml:"pro,omitempty" json:"pro,omitempty"`
 	ProjectName     string           `yaml:"project_name,omitempty" json:"project_name,omitempty"`
 	Env             []string         `yaml:"env,omitempty" json:"env,omitempty"`
 	Release         Release          `yaml:"release,omitempty" json:"release,omitempty"`
@@ -1529,6 +1537,9 @@ type Cloudsmith struct {
 	SecretName    string            `yaml:"secret_name,omitempty" json:"secret_name,omitempty"`
 	Disable       string            `yaml:"disable,omitempty" json:"disable,omitempty"`
 	Distributions map[string]string `yaml:"distributions" json:"distributions"`
+
+	// v2.7
+	Component string `yaml:"component,omitempty" json:"component,omitempty"`
 }
 
 type Mastodon struct {
@@ -1702,4 +1713,3 @@ type ChocolateyDependency struct {
 	ID      string `yaml:"id,omitempty" json:"id,omitempty"`
 	Version string `yaml:"version,omitempty" json:"version,omitempty"`
 }
-
