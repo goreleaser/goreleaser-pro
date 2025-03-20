@@ -20,3 +20,12 @@ type Include struct { // pro only
 
 // IncludedMarkdown type alias.
 type IncludedMarkdown Include
+
+// MarshalYAML implements yaml.Marshaler.
+func (i IncludedMarkdown) MarshalYAML() (interface{}, error) {
+	if i.Content != "" {
+		return i.Content, nil
+	}
+	type alias IncludedMarkdown
+	return alias(i), nil
+}
