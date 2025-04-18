@@ -13,6 +13,11 @@ extra features.
 
 With GoReleaser Pro you can:
 
+- Publish to [NPM registries](https://goreleaser.com/customization/npm);
+- Native macOS App Bundles signing and DMG
+  [notarization](https://goreleaser.com/customization/notarize#native);
+- Use [AI](https://goreleaser.com/customization/changelog#enhance-with-ai) to
+  improve/format your release notes;
 - Further filter artifacts with `if` statements;
 - Create macOS [App Bundles](https://goreleaser.com/customization/app_bundles);
 - Easily create `alpine`, `apt`, and `yum` repositories with the [CloudSmith integration](https://goreleaser.com/customization/cloudsmith);
