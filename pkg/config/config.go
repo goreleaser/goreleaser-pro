@@ -3,11 +3,9 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/fs"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -125,26 +123,6 @@ type PullRequestBase struct {
 // type alias to prevent stack overflowing in the custom unmarshaler.
 type pullRequestBase PullRequestBase
 
-// UnmarshalYAML is a custom unmarshaler that accept brew deps in both the old and new format.
-func (a *PullRequestBase) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var str string
-	if err := unmarshal(&str); err == nil {
-		a.Branch = str
-		return nil
-	}
-
-	var base pullRequestBase
-	if err := unmarshal(&base); err != nil {
-		return err
-	}
-
-	a.Branch = base.Branch
-	a.Owner = base.Owner
-	a.Name = base.Name
-
-	return nil
-}
-
 type PullRequest struct {
 	Enabled bool            `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	Base    PullRequestBase `yaml:"base,omitempty" json:"base,omitempty"`
@@ -164,27 +142,6 @@ type HomebrewDependency struct {
 
 // type alias to prevent stack overflowing in the custom unmarshaler.
 type homebrewDependency HomebrewDependency
-
-// UnmarshalYAML is a custom unmarshaler that accept brew deps in both the old and new format.
-func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var str string
-	if err := unmarshal(&str); err == nil {
-		a.Name = str
-		return nil
-	}
-
-	var dep homebrewDependency
-	if err := unmarshal(&dep); err != nil {
-		return err
-	}
-
-	a.Name = dep.Name
-	a.Type = dep.Type
-	a.Version = dep.Version
-	a.OS = dep.OS
-
-	return nil
-}
 
 type AUR struct {
 	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
@@ -329,31 +286,13 @@ type NixDependency struct {
 	OS   string `yaml:"os,omitempty" json:"os,omitempty" jsonschema:"enum=linux,enum=darwin"`
 }
 
-func (a *NixDependency) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var str string
-	if err := unmarshal(&str); err == nil {
-		a.Name = str
-		return nil
-	}
-
-	type t NixDependency
-	var dep t
-	if err := unmarshal(&dep); err != nil {
-		return err
-	}
-
-	a.Name = dep.Name
-	a.OS = dep.OS
-
-	return nil
-}
-
 type Winget struct {
 	Name                  string             `yaml:"name,omitempty" json:"name,omitempty"`
 	PackageIdentifier     string             `yaml:"package_identifier,omitempty" json:"package_identifier,omitempty"`
 	Publisher             string             `yaml:"publisher" json:"publisher"`
 	PublisherURL          string             `yaml:"publisher_url,omitempty" json:"publisher_url,omitempty"`
 	PublisherSupportURL   string             `yaml:"publisher_support_url,omitempty" json:"publisher_support_url,omitempty"`
+	PrivacyURL            string             `yaml:"privacy_url,omitempty" json:"privacy_url,omitempty"`
 	Copyright             string             `yaml:"copyright,omitempty" json:"copyright,omitempty"`
 	CopyrightURL          string             `yaml:"copyright_url,omitempty" json:"copyright_url,omitempty"`
 	Author                string             `yaml:"author,omitempty" json:"author,omitempty"`
@@ -372,6 +311,7 @@ type Winget struct {
 	LicenseURL            string             `yaml:"license_url,omitempty" json:"license_url,omitempty"`
 	ReleaseNotes          string             `yaml:"release_notes,omitempty" json:"release_notes,omitempty"`
 	ReleaseNotesURL       string             `yaml:"release_notes_url,omitempty" json:"release_notes_url,omitempty"`
+	InstallationNotes     string             `yaml:"installation_notes,omitempty" json:"installation_notes,omitempty"`
 	Tags                  []string           `yaml:"tags,omitempty" json:"tags,omitempty"`
 	Dependencies          []WingetDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
 
@@ -418,7 +358,8 @@ type Ko struct {
 	Tags                []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
 	CreationTime        string            `yaml:"creation_time,omitempty" json:"creation_time,omitempty"`
 	KoDataCreationTime  string            `yaml:"ko_data_creation_time,omitempty" json:"ko_data_creation_time,omitempty"`
-	SBOM                string            `yaml:"sbom,omitempty" json:"sbom,omitempty"`
+	SBOM                string            `yaml:"sbom,omitempty" json:"sbom,omitempty" jsonschema:"enum=spdx,enum=none,default=spdx"`
+	SBOMDirectory       string            `yaml:"sbom_directory,omitempty" json:"sbom_directory,omitempty"`
 	Ldflags             []string          `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
 	Flags               []string          `yaml:"flags,omitempty" json:"flags,omitempty"`
 	Env                 []string          `yaml:"env,omitempty" json:"env,omitempty"`
@@ -482,38 +423,8 @@ type IgnoredBuild struct {
 // StringArray is a wrapper for an array of strings.
 type StringArray []string
 
-// UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
-func (a *StringArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var strings []string
-	if err := unmarshal(&strings); err != nil {
-		var str string
-		if err := unmarshal(&str); err != nil {
-			return err
-		}
-		*a = []string{str}
-	} else {
-		*a = strings
-	}
-	return nil
-}
-
 // FlagArray is a wrapper for an array of strings.
 type FlagArray []string
-
-// UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
-func (a *FlagArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var flags []string
-	if err := unmarshal(&flags); err != nil {
-		var flagstr string
-		if err := unmarshal(&flagstr); err != nil {
-			return err
-		}
-		*a = strings.Fields(flagstr)
-	} else {
-		*a = flags
-	}
-	return nil
-}
 
 // Build contains the build configuration section.
 type Build struct {
@@ -547,12 +458,21 @@ type Build struct {
 	BuildDetails          `yaml:",inline" json:",inline"`
 	BuildDetailsOverrides []BuildDetailsOverride `yaml:"overrides,omitempty" json:"overrides,omitempty"`
 
+	// This is used internally only.
+	InternalDefaults BuildInternalDefaults `yaml:"-" json:"-"`
+
 	// pro options
 	PreBuilt PreBuiltOptions `yaml:"prebuilt,omitempty" json:"prebuilt,omitempty"`
 }
 
 type PreBuiltOptions struct { // pro only
 	Path string `yaml:"path,omitempty" json:"path,omitempty"`
+}
+
+type BuildInternalDefaults struct {
+	// whether the pipe set the current binary.
+	// this is true when the user didn't set a binary name.
+	Binary bool
 }
 
 type BuildDetailsOverride struct {
@@ -569,7 +489,7 @@ type BuildDetailsOverride struct {
 }
 
 type BuildDetails struct {
-	Buildmode string      `yaml:"buildmode,omitempty" json:"buildmode,omitempty" jsonschema:"enum=c-archive,enum=c-shared,enum=pie,enum=,default="`
+	Buildmode string      `yaml:"buildmode,omitempty" json:"buildmode,omitempty" jsonschema:"enum=c-archive,enum=c-shared,enum=pie,enum=wheel,enum=sdist,enum=,default="`
 	Ldflags   StringArray `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
 	Tags      FlagArray   `yaml:"tags,omitempty" json:"tags,omitempty"`
 	Flags     FlagArray   `yaml:"flags,omitempty" json:"flags,omitempty"`
@@ -585,47 +505,12 @@ type BuildHookConfig struct {
 
 type Hooks []Hook
 
-// UnmarshalYAML is a custom unmarshaler that allows simplified declaration of single command.
-func (bhc *Hooks) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var singleCmd string
-	err := unmarshal(&singleCmd)
-	if err == nil {
-		*bhc = []Hook{{Cmd: singleCmd}}
-		return nil
-	}
-
-	type t Hooks
-	var hooks t
-	if err := unmarshal(&hooks); err != nil {
-		return err
-	}
-	*bhc = (Hooks)(hooks)
-	return nil
-}
-
 type Hook struct {
 	Dir    string   `yaml:"dir,omitempty" json:"dir,omitempty"`
 	Cmd    string   `yaml:"cmd,omitempty" json:"cmd,omitempty"`
 	If     string   `yaml:"if,omitempty" json:"if,omitempty"`
 	Env    []string `yaml:"env,omitempty" json:"env,omitempty"`
 	Output bool     `yaml:"output,omitempty" json:"output,omitempty"`
-}
-
-// UnmarshalYAML is a custom unmarshaler that allows simplified declarations of commands as strings.
-func (bh *Hook) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var cmd string
-	if err := unmarshal(&cmd); err != nil {
-		type t Hook
-		var hook t
-		if err := unmarshal(&hook); err != nil {
-			return err
-		}
-		*bh = (Hook)(hook)
-		return nil
-	}
-
-	bh.Cmd = cmd
-	return nil
 }
 
 // FormatOverride is used to specify a custom format for a specific GOOS.
@@ -646,7 +531,7 @@ type File struct {
 	Default     bool     `yaml:"-" json:"-"`
 }
 
-// File is a file inside an archive.
+// TemplatedFile is a templated file inside an archive.
 type TemplatedFile struct {
 	Source      string   `yaml:"src,omitempty" json:"src,omitempty"`
 	Destination string   `yaml:"dst,omitempty" json:"dst,omitempty"`
@@ -660,23 +545,6 @@ type FileInfo struct {
 	Mode        os.FileMode `yaml:"mode,omitempty" json:"mode,omitempty"`
 	MTime       string      `yaml:"mtime,omitempty" json:"mtime,omitempty"`
 	ParsedMTime time.Time   `yaml:"-" json:"-"`
-}
-
-// UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
-func (f *File) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	type t File
-	var str string
-	if err := unmarshal(&str); err == nil {
-		*f = File{Source: str}
-		return nil
-	}
-
-	var file t
-	if err := unmarshal(&file); err != nil {
-		return err
-	}
-	*f = File(file)
-	return nil
 }
 
 // UniversalBinary setups macos universal binaries.
@@ -784,23 +652,6 @@ type Milestone struct {
 type ExtraFile struct {
 	Glob         string `yaml:"glob,omitempty" json:"glob,omitempty"`
 	NameTemplate string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
-}
-
-// UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
-func (f *ExtraFile) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	type t ExtraFile
-	var str string
-	if err := unmarshal(&str); err == nil {
-		*f = ExtraFile{Glob: str}
-		return nil
-	}
-
-	var file t
-	if err := unmarshal(&file); err != nil {
-		return err
-	}
-	*f = ExtraFile(file)
-	return nil
 }
 
 // TemplatedExtraFile on a release.
@@ -955,7 +806,7 @@ type NFPMArchLinux struct {
 	Scripts  NFPMArchLinuxScripts `yaml:"scripts,omitempty" json:"scripts,omitempty"`
 }
 
-// NFPMIPK is custom config only available on ipk packages.
+// NFPMIPKAlternative is used to specify alternatives for ipk packages.
 type NFPMIPKAlternative struct {
 	Priority int    `yaml:"priority,omitempty" json:"priority,omitempty"`
 	Target   string `yaml:"target,omitempty" json:"target,omitempty"`
@@ -1088,35 +939,35 @@ type SnapcraftAppMetadata struct {
 	Command string `yaml:"command" json:"command"`
 	Args    string `yaml:"args,omitempty" json:"args,omitempty"`
 
-	Adapter          string                 `yaml:"adapter,omitempty" json:"adapter,omitempty"`
-	After            []string               `yaml:"after,omitempty" json:"after,omitempty"`
-	Aliases          []string               `yaml:"aliases,omitempty" json:"aliases,omitempty"`
-	Autostart        string                 `yaml:"autostart,omitempty" json:"autostart,omitempty"`
-	Before           []string               `yaml:"before,omitempty" json:"before,omitempty"`
-	BusName          string                 `yaml:"bus_name,omitempty" json:"bus_name,omitempty"`
-	CommandChain     []string               `yaml:"command_chain,omitempty" json:"command_chain,omitempty"`
-	CommonID         string                 `yaml:"common_id,omitempty" json:"common_id,omitempty"`
-	Completer        string                 `yaml:"completer,omitempty" json:"completer,omitempty"`
-	Daemon           string                 `yaml:"daemon,omitempty" json:"daemon,omitempty"`
-	Desktop          string                 `yaml:"desktop,omitempty" json:"desktop,omitempty"`
-	Environment      map[string]interface{} `yaml:"environment,omitempty" json:"environment,omitempty"`
-	Extensions       []string               `yaml:"extensions,omitempty" json:"extensions,omitempty"`
-	InstallMode      string                 `yaml:"install_mode,omitempty" json:"install_mode,omitempty"`
-	Passthrough      map[string]interface{} `yaml:"passthrough,omitempty" json:"passthrough,omitempty"`
-	Plugs            []string               `yaml:"plugs,omitempty" json:"plugs,omitempty"`
-	PostStopCommand  string                 `yaml:"post_stop_command,omitempty" json:"post_stop_command,omitempty"`
-	RefreshMode      string                 `yaml:"refresh_mode,omitempty" json:"refresh_mode,omitempty"`
-	ReloadCommand    string                 `yaml:"reload_command,omitempty" json:"reload_command,omitempty"`
-	RestartCondition string                 `yaml:"restart_condition,omitempty" json:"restart_condition,omitempty"`
-	RestartDelay     string                 `yaml:"restart_delay,omitempty" json:"restart_delay,omitempty"`
-	Slots            []string               `yaml:"slots,omitempty" json:"slots,omitempty"`
-	Sockets          map[string]interface{} `yaml:"sockets,omitempty" json:"sockets,omitempty"`
-	StartTimeout     string                 `yaml:"start_timeout,omitempty" json:"start_timeout,omitempty"`
-	StopCommand      string                 `yaml:"stop_command,omitempty" json:"stop_command,omitempty"`
-	StopMode         string                 `yaml:"stop_mode,omitempty" json:"stop_mode,omitempty"`
-	StopTimeout      string                 `yaml:"stop_timeout,omitempty" json:"stop_timeout,omitempty"`
-	Timer            string                 `yaml:"timer,omitempty" json:"timer,omitempty"`
-	WatchdogTimeout  string                 `yaml:"watchdog_timeout,omitempty" json:"watchdog_timeout,omitempty"`
+	Adapter          string         `yaml:"adapter,omitempty" json:"adapter,omitempty"`
+	After            []string       `yaml:"after,omitempty" json:"after,omitempty"`
+	Aliases          []string       `yaml:"aliases,omitempty" json:"aliases,omitempty"`
+	Autostart        string         `yaml:"autostart,omitempty" json:"autostart,omitempty"`
+	Before           []string       `yaml:"before,omitempty" json:"before,omitempty"`
+	BusName          string         `yaml:"bus_name,omitempty" json:"bus_name,omitempty"`
+	CommandChain     []string       `yaml:"command_chain,omitempty" json:"command_chain,omitempty"`
+	CommonID         string         `yaml:"common_id,omitempty" json:"common_id,omitempty"`
+	Completer        string         `yaml:"completer,omitempty" json:"completer,omitempty"`
+	Daemon           string         `yaml:"daemon,omitempty" json:"daemon,omitempty"`
+	Desktop          string         `yaml:"desktop,omitempty" json:"desktop,omitempty"`
+	Environment      map[string]any `yaml:"environment,omitempty" json:"environment,omitempty"`
+	Extensions       []string       `yaml:"extensions,omitempty" json:"extensions,omitempty"`
+	InstallMode      string         `yaml:"install_mode,omitempty" json:"install_mode,omitempty"`
+	Passthrough      map[string]any `yaml:"passthrough,omitempty" json:"passthrough,omitempty"`
+	Plugs            []string       `yaml:"plugs,omitempty" json:"plugs,omitempty"`
+	PostStopCommand  string         `yaml:"post_stop_command,omitempty" json:"post_stop_command,omitempty"`
+	RefreshMode      string         `yaml:"refresh_mode,omitempty" json:"refresh_mode,omitempty"`
+	ReloadCommand    string         `yaml:"reload_command,omitempty" json:"reload_command,omitempty"`
+	RestartCondition string         `yaml:"restart_condition,omitempty" json:"restart_condition,omitempty"`
+	RestartDelay     string         `yaml:"restart_delay,omitempty" json:"restart_delay,omitempty"`
+	Slots            []string       `yaml:"slots,omitempty" json:"slots,omitempty"`
+	Sockets          map[string]any `yaml:"sockets,omitempty" json:"sockets,omitempty"`
+	StartTimeout     string         `yaml:"start_timeout,omitempty" json:"start_timeout,omitempty"`
+	StopCommand      string         `yaml:"stop_command,omitempty" json:"stop_command,omitempty"`
+	StopMode         string         `yaml:"stop_mode,omitempty" json:"stop_mode,omitempty"`
+	StopTimeout      string         `yaml:"stop_timeout,omitempty" json:"stop_timeout,omitempty"`
+	Timer            string         `yaml:"timer,omitempty" json:"timer,omitempty"`
+	WatchdogTimeout  string         `yaml:"watchdog_timeout,omitempty" json:"watchdog_timeout,omitempty"`
 }
 
 type SnapcraftLayoutMetadata struct {
@@ -1145,8 +996,8 @@ type Snapcraft struct {
 	Assumes          []string                           `yaml:"assumes,omitempty" json:"assumes,omitempty"`
 	Layout           map[string]SnapcraftLayoutMetadata `yaml:"layout,omitempty" json:"layout,omitempty"`
 	Apps             map[string]SnapcraftAppMetadata    `yaml:"apps,omitempty" json:"apps,omitempty"`
-	Hooks            map[string]interface{}             `yaml:"hooks,omitempty" json:"hooks,omitempty"`
-	Plugs            map[string]interface{}             `yaml:"plugs,omitempty" json:"plugs,omitempty"`
+	Hooks            map[string]any                     `yaml:"hooks,omitempty" json:"hooks,omitempty"`
+	Plugs            map[string]any                     `yaml:"plugs,omitempty" json:"plugs,omitempty"`
 	Disable          string                             `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 
 	Files []SnapcraftExtraFiles `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
@@ -1217,7 +1068,7 @@ type Docker struct {
 	TemplatedDockerfile string                       `yaml:"templated_dockerfile,omitempty" json:"templated_dockerfile,omitempty"`
 }
 
-// TemplatedExtraFileWithMode.
+// TemplatedExtraFileWithMode is a templated file with a mode.
 type TemplatedExtraFileWithMode struct {
 	Source      string      `yaml:"src,omitempty" json:"src,omitempty"`
 	Destination string      `yaml:"dst,omitempty" json:"dst,omitempty"`
@@ -1272,7 +1123,7 @@ type ChangelogGroup struct {
 	Groups []ChangelogSubgroup `yaml:"groups,omitempty" json:"groups,omitempty"`
 }
 
-// ChangeLogGroup holds the grouping criteria for the changelog.
+// ChangelogSubgroup is a subgroup of a changelog group.
 type ChangelogSubgroup struct {
 	Title  string `yaml:"title,omitempty" json:"title,omitempty"`
 	Regexp string `yaml:"regexp,omitempty" json:"regexp,omitempty"`
@@ -1306,7 +1157,8 @@ type BeforePublishHook struct {
 	Output    bool     `yaml:"output,omitempty" json:"output,omitempty"`
 }
 
-// pro-only
+// MSI defines the configuration for the MSI package.
+// pro-only.
 type MSI struct {
 	ID           string   `yaml:"id,omitempty" json:"id,omitempty"`
 	Name         string   `yaml:"name" json:"name"`
@@ -1322,7 +1174,8 @@ type MSI struct {
 	Version string `yaml:"version,omitempty" json:"version,omitempty" jsonschema:"enum=v3,enum=v4"`
 }
 
-// pro-only
+// AppBundle defines the configuration for the AppBundle package.
+// pro-only.
 type AppBundle struct {
 	ID           string   `yaml:"id,omitempty" json:"id,omitempty"`
 	Name         string   `yaml:"name,omitempty" json:"name,omitempty"`
@@ -1337,7 +1190,8 @@ type AppBundle struct {
 	TemplatedFiles []TemplatedFile `yaml:"templated_extra_files,omitempty" json:"templated_extra_files,omitempty"`
 }
 
-// pro-only
+// DMG defines the configuration for the DMG package.
+// pro-only.
 type DMG struct {
 	ID           string      `yaml:"id,omitempty" json:"id,omitempty"`
 	Name         string      `yaml:"name" json:"name"`
@@ -1474,7 +1328,7 @@ type Project struct {
 	BinarySigns     []Sign           `yaml:"binary_signs,omitempty" json:"binary_signs,omitempty"`
 	EnvFiles        EnvFiles         `yaml:"env_files,omitempty" json:"env_files,omitempty"`
 	Before          Before           `yaml:"before,omitempty" json:"before,omitempty"`
-	After           After            `yaml:"after,omitempty" json:"after,omitempty"`
+	After           After            `yaml:"after,omitempty" json:"after,omitempty"` // pro-only.
 	Source          Source           `yaml:"source,omitempty" json:"source,omitempty"`
 	GoMod           GoMod            `yaml:"gomod,omitempty" json:"gomod,omitempty"`
 	Announce        Announce         `yaml:"announce,omitempty" json:"announce,omitempty"`
@@ -1502,15 +1356,15 @@ type Project struct {
 	GiteaURLs GiteaURLs `yaml:"gitea_urls,omitempty" json:"gitea_urls,omitempty"`
 
 	// Pro-only options
-	Includes      []Include              `yaml:"includes,omitempty" json:"includes,omitempty"`
-	Variables     map[string]interface{} `yaml:"variables,omitempty" json:"variables,omitempty"`
-	Monorepo      Monorepo               `yaml:"monorepo,omitempty" json:"monorepo,omitempty"`
-	Partial       Partial                `yaml:"partial,omitempty" json:"partial,omitempty"`
-	Nightly       Nightly                `yaml:"nightly,omitempty" json:"nightly,omitempty"`
-	Furies        []Fury                 `yaml:"furies,omitempty" json:"furies,omitempty"`
-	Cloudsmiths   []Cloudsmith           `yaml:"cloudsmiths,omitempty" json:"cloudsmiths,omitempty"`
-	DockerHubs    []DockerHub            `yaml:"dockerhub,omitempty" json:"dockerhub,omitempty"`
-	BeforePublish []BeforePublishHook    `yaml:"before_publish,omitempty" json:"before_publish,omitempty"`
+	Includes      []Include           `yaml:"includes,omitempty" json:"includes,omitempty"`
+	Variables     map[string]any      `yaml:"variables,omitempty" json:"variables,omitempty"`
+	Monorepo      Monorepo            `yaml:"monorepo,omitempty" json:"monorepo,omitempty"`
+	Partial       Partial             `yaml:"partial,omitempty" json:"partial,omitempty"`
+	Nightly       Nightly             `yaml:"nightly,omitempty" json:"nightly,omitempty"`
+	Furies        []Fury              `yaml:"furies,omitempty" json:"furies,omitempty"`
+	Cloudsmiths   []Cloudsmith        `yaml:"cloudsmiths,omitempty" json:"cloudsmiths,omitempty"`
+	DockerHubs    []DockerHub         `yaml:"dockerhub,omitempty" json:"dockerhub,omitempty"`
+	BeforePublish []BeforePublishHook `yaml:"before_publish,omitempty" json:"before_publish,omitempty"`
 }
 
 type TemplateFile struct {
@@ -1701,46 +1555,12 @@ type Bluesky struct {
 
 // SlackBlock represents the untyped structure of a rich slack message layout.
 type SlackBlock struct {
-	Internal interface{}
-}
-
-// UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack block as untyped interface{}.
-func (a *SlackBlock) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var yamlv2 interface{}
-	if err := unmarshal(&yamlv2); err != nil {
-		return err
-	}
-
-	a.Internal = yamlv2
-
-	return nil
-}
-
-// MarshalJSON marshals a slack block as JSON.
-func (a SlackBlock) MarshalJSON() ([]byte, error) {
-	return json.Marshal(a.Internal)
+	Internal any
 }
 
 // SlackAttachment represents the untyped structure of a slack message attachment.
 type SlackAttachment struct {
-	Internal interface{}
-}
-
-// UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack attachment as untyped interface{}.
-func (a *SlackAttachment) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var yamlv2 interface{}
-	if err := unmarshal(&yamlv2); err != nil {
-		return err
-	}
-
-	a.Internal = yamlv2
-
-	return nil
-}
-
-// MarshalJSON marshals a slack attachment as JSON.
-func (a SlackAttachment) MarshalJSON() ([]byte, error) {
-	return json.Marshal(a.Internal)
+	Internal any
 }
 
 // Chocolatey contains the chocolatey section.
