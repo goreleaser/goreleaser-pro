@@ -129,7 +129,8 @@ type PullRequest struct {
 	Draft   bool            `yaml:"draft,omitempty" json:"draft,omitempty"`
 
 	// pro only
-	CheckBoxes bool `yaml:"check_boxes,omitempty" json:"check_boxes,omitempty"`
+	CheckBoxes bool   `yaml:"check_boxes,omitempty" json:"check_boxes,omitempty"`
+	Body       string `yaml:"body,omitempty" json:"body,omitempty"`
 }
 
 // HomebrewDependency represents Homebrew dependency.
@@ -330,7 +331,9 @@ type HomebrewCaskHook struct {
 }
 
 type HomebrewCaskConflict struct {
-	Cask    string `yaml:"cask,omitempty" json:"cask,omitempty"`
+	Cask string `yaml:"cask,omitempty" json:"cask,omitempty"`
+
+	// Deprecated: by homebrew.
 	Formula string `yaml:"formula,omitempty" json:"formula,omitempty"`
 }
 
@@ -942,7 +945,7 @@ type NFPMOverridables struct {
 	ArchLinux        NFPMArchLinux `yaml:"archlinux,omitempty" json:"archlinux,omitempty"`
 	IPK              NFPMIPK       `yaml:"ipk,omitempty" json:"ipk,omitempty"`
 
-	// pro onlu
+	// pro only
 	TemplatedContents []NFPMContent `yaml:"templated_contents,omitempty" json:"templated_contents,omitempty"`
 	TemplatedScripts  NFPMScripts   `yaml:"templated_scripts,omitempty" json:"templated_scripts,omitempty"`
 }
@@ -1124,12 +1127,14 @@ type Snapshot struct {
 
 // Nightly config.
 type Nightly struct { // pro only
-	VersionTemplate string `yaml:"version_template,omitempty" json:"version_template,omitempty"`
-	// Deprecated: use VersionTemplate.
-	NameTemplate      string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
+	VersionTemplate   string `yaml:"version_template,omitempty" json:"version_template,omitempty"`
 	TagName           string `yaml:"tag_name,omitempty" json:"tag_name,omitempty"`
 	PublishRelease    bool   `yaml:"publish_release,omitempty" json:"publish_release,omitempty"`
 	KeepSingleRelease bool   `yaml:"keep_single_release,omitempty" json:"keep_single_release,omitempty"`
+	Draft             bool   `yaml:"draft,omitempty" json:"draft,omitempty"`
+
+	// Deprecated: use [Nightly.VersionTemplate].
+	NameTemplate string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 }
 
 // Checksum config.
@@ -1145,7 +1150,16 @@ type Checksum struct {
 	TemplatedExtraFiles []TemplatedExtraFile `yaml:"templated_extra_files,omitempty" json:"templated_extra_files,omitempty"`
 }
 
+// Retry config for operations that support retries.
+// Added in v2.12.
+type Retry struct {
+	Attempts uint          `yaml:"attempts,omitempty" json:"attempts,omitempty"`
+	Delay    time.Duration `yaml:"delay,omitempty" json:"delay,omitempty"`
+	MaxDelay time.Duration `yaml:"max_delay,omitempty" json:"max_delay,omitempty"`
+}
+
 // Docker image config.
+// Deprecated: use [DockerV2] instead.
 type Docker struct {
 	ID                 string   `yaml:"id,omitempty" json:"id,omitempty"`
 	IDs                []string `yaml:"ids,omitempty" json:"ids,omitempty"`
@@ -1161,6 +1175,7 @@ type Docker struct {
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty" json:"build_flag_templates,omitempty"`
 	PushFlags          []string `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
 	Use                string   `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=docker,enum=buildx,enum=podman,default=docker"`
+	Retry              Retry    `yaml:"retry,omitempty" json:"retry,omitempty"`
 
 	// pro-only
 	TemplatedFiles      []TemplatedExtraFileWithMode `yaml:"templated_files,omitempty" json:"templated_files,omitempty"`
@@ -1175,6 +1190,7 @@ type TemplatedExtraFileWithMode struct {
 }
 
 // DockerManifest config.
+// Deprecated: use [DockerV2] instead.
 type DockerManifest struct {
 	ID             string   `yaml:"id,omitempty" json:"id,omitempty"`
 	NameTemplate   string   `yaml:"name_template,omitempty" json:"name_template,omitempty"`
@@ -1183,6 +1199,29 @@ type DockerManifest struct {
 	CreateFlags    []string `yaml:"create_flags,omitempty" json:"create_flags,omitempty"`
 	PushFlags      []string `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
 	Use            string   `yaml:"use,omitempty" json:"use,omitempty"`
+	Retry          Retry    `yaml:"retry,omitempty" json:"retry,omitempty"`
+}
+
+// DockerV2 is the new Docker build pipe options.
+type DockerV2 struct {
+	ID          string            `yaml:"id,omitempty" json:"id,omitempty"`
+	IDs         []string          `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Dockerfile  string            `yaml:"dockerfile,omitempty" json:"dockerfile,omitempty"`
+	Images      []string          `yaml:"images,omitempty" json:"images,omitempty"`
+	Tags        []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Labels      map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
+	Annotations map[string]string `yaml:"annotations,omitempty" json:"annotations,omitempty"`
+	ExtraFiles  []string          `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	Platforms   []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
+	BuildArgs   map[string]string `yaml:"build_args,omitempty" json:"build_args,omitempty"`
+	Retry       Retry             `yaml:"retry,omitempty" json:"retry,omitempty"`
+	Flags       []string          `yaml:"flags,omitempty" json:"flags,omitempty"`
+}
+
+// DockerDigest config.
+type DockerDigest struct {
+	Disable      string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
+	NameTemplate string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 }
 
 // Filters config.
@@ -1205,6 +1244,7 @@ type Changelog struct {
 	// Pro-only.
 	Paths []string    `yaml:"paths,omitempty" json:"paths,omitempty"`
 	AI    ChangelogAI `yaml:"ai,omitempty" json:"ai,omitempty"`
+	Title string      `yaml:"title,omitempty" json:"title,omitempty"`
 }
 
 type ChangelogAI struct {
@@ -1271,6 +1311,9 @@ type MSI struct {
 
 	// 2.7+
 	Version string `yaml:"version,omitempty" json:"version,omitempty" jsonschema:"enum=v3,enum=v4"`
+
+	// 2.12+
+	Disable string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 // AppBundle defines the configuration for the AppBundle package.
@@ -1352,6 +1395,9 @@ type Upload struct {
 	ExtraFilesOnly     bool              `yaml:"extra_files_only,omitempty" json:"extra_files_only,omitempty"`
 	Skip               string            `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
 
+	// Since v2.12
+	Password string `yaml:"password,omitempty" json:"password,omitempty"`
+
 	// Pro-only
 	Matrix              Matrix               `yaml:"matrix,omitempty" json:"matrix,omitempty"`
 	TemplatedExtraFiles []TemplatedExtraFile `yaml:"templated_extra_files,omitempty" json:"templated_extra_files,omitempty"`
@@ -1415,6 +1461,8 @@ type Project struct {
 	Snapshot        Snapshot         `yaml:"snapshot,omitempty" json:"snapshot,omitempty"`
 	Checksum        Checksum         `yaml:"checksum,omitempty" json:"checksum,omitempty"`
 	Dockers         []Docker         `yaml:"dockers,omitempty" json:"dockers,omitempty"`
+	DockersV2       []DockerV2       `yaml:"dockers_v2,omitempty" json:"dockers_v2,omitempty"`
+	DockerDigest    DockerDigest     `yaml:"docker_digest,omitempty" json:"docker_digest,omitempty"`
 	DockerManifests []DockerManifest `yaml:"docker_manifests,omitempty" json:"docker_manifests,omitempty"`
 	Artifactories   []Upload         `yaml:"artifactories,omitempty" json:"artifactories,omitempty"`
 	Uploads         []Upload         `yaml:"uploads,omitempty" json:"uploads,omitempty"`
@@ -1485,6 +1533,7 @@ type ProjectMetadata struct {
 	License          string   `yaml:"license,omitempty" json:"license,omitempty"`
 	Maintainers      []string `yaml:"maintainers,omitempty" json:"maintainers,omitempty"`
 
+	CommitAuthor    CommitAuthor     `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
 	FullDescription IncludedMarkdown `yaml:"full_description,omitempty" json:"full_description,omitempty"`
 }
 
