@@ -1,0 +1,19 @@
+# https://taskfile.dev
+
+version: "3"
+
+env:
+  GO111MODULE: on
+  GOPROXY: https://proxy.golang.org,direct
+
+tasks:
+  sync:
+    desc: Sync config
+    sources:
+      - ../goreleaser-pro-internal/pkg/config/
+    generates:
+      - ./pkg/config/
+    cmds:
+      - cp -f ../goreleaser-pro-internal/pkg/config/config.go ./pkg/config/
+      - cp -f ../goreleaser-pro-internal/pkg/config/include.go ./pkg/config/
+      - cp -f ../goreleaser-pro-internal/pkg/config/marshaler.go ./pkg/config/

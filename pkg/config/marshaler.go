@@ -140,9 +140,6 @@ func (a *NixDependency) UnmarshalYAML(unmarshal func(any) error) error {
 	return nil
 }
 
-// type alias to prevent stack overflowing in the custom unmarshaler.
-type pullRequestBase PullRequestBase
-
 // UnmarshalYAML is a custom unmarshaler that accept brew deps in both the old and new format.
 func (a *PullRequestBase) UnmarshalYAML(unmarshal func(any) error) error {
 	var str string
@@ -151,7 +148,8 @@ func (a *PullRequestBase) UnmarshalYAML(unmarshal func(any) error) error {
 		return nil
 	}
 
-	var base pullRequestBase
+	type t PullRequestBase
+	var base t
 	if err := unmarshal(&base); err != nil {
 		return err
 	}
@@ -182,5 +180,44 @@ func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(any) error) error {
 	a.Version = dep.Version
 	a.OS = dep.OS
 
+	return nil
+}
+
+// UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
+func (f *ExtraFile) UnmarshalYAML(unmarshal func(any) error) error {
+	type t ExtraFile
+	var str string
+	if err := unmarshal(&str); err == nil {
+		*f = ExtraFile{Glob: str}
+		return nil
+	}
+
+	var file t
+	if err := unmarshal(&file); err != nil {
+		return err
+	}
+	*f = ExtraFile(file)
+	return nil
+}
+
+func (i IncludedMarkdown) MarshalYAML() (any, error) {
+	if i.Content != "" {
+		return i.Content, nil
+	}
+	return Include(i), nil
+}
+
+func (i *IncludedMarkdown) UnmarshalYAML(unmarshal func(any) error) error {
+	var content string
+	if err := unmarshal(&content); err != nil {
+		var hook Include
+		if err := unmarshal(&hook); err != nil {
+			return err
+		}
+		*i = (IncludedMarkdown)(hook)
+		return nil
+	}
+
+	i.Content = content
 	return nil
 }
