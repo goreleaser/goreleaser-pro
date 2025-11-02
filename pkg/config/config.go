@@ -224,6 +224,9 @@ type NPM struct {
 
 	// v2.10+
 	URLTemplate string `yaml:"url_template,omitempty" json:"url_template,omitempty"`
+
+	// v2.13+
+	Tag string `yaml:"tag,omitempty" json:"tag,omitempty"`
 }
 
 // Homebrew contains the brew section.
@@ -263,40 +266,40 @@ type Homebrew struct {
 
 // HomebrewCask contains the homebrew_casks section.
 type HomebrewCask struct {
-	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
-	Repository            RepoRef      `yaml:"repository,omitempty" json:"repository,omitempty"`
-	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
-	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
-	Directory             string       `yaml:"directory,omitempty" json:"directory,omitempty"`
-	Caveats               string       `yaml:"caveats,omitempty" json:"caveats,omitempty"`
-	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
-	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
-	License               string       `yaml:"license,omitempty" json:"license,omitempty"` // XXX: seems like casks don't support it?
-	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
-	CustomBlock           string       `yaml:"custom_block,omitempty" json:"custom_block,omitempty"`
-	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Service               string       `yaml:"service,omitempty" json:"service,omitempty"`
+	Name                  string                   `yaml:"name,omitempty" json:"name,omitempty"`
+	Repository            RepoRef                  `yaml:"repository,omitempty" json:"repository,omitempty"`
+	CommitAuthor          CommitAuthor             `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
+	CommitMessageTemplate string                   `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
+	Directory             string                   `yaml:"directory,omitempty" json:"directory,omitempty"`
+	Caveats               string                   `yaml:"caveats,omitempty" json:"caveats,omitempty"`
+	Description           string                   `yaml:"description,omitempty" json:"description,omitempty"`
+	Homepage              string                   `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	SkipUpload            string                   `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
+	CustomBlock           string                   `yaml:"custom_block,omitempty" json:"custom_block,omitempty"`
+	IDs                   []string                 `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Service               string                   `yaml:"service,omitempty" json:"service,omitempty"`
+	Binaries              []string                 `yaml:"binaries,omitempty" json:"binaries,omitempty"`
+	Manpages              []string                 `yaml:"manpages,omitempty" json:"manpages,omitempty"`
+	URL                   HomebrewCaskURL          `yaml:"url,omitempty" json:"url,omitempty"`
+	Completions           HomebrewCaskCompletions  `yaml:"completions,omitempty" json:"completions,omitempty"`
+	Dependencies          []HomebrewCaskDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+	Conflicts             []HomebrewCaskConflict   `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
+	Hooks                 HomebrewCaskHooks        `yaml:"hooks,omitempty" json:"hooks,omitempty"`
+	Uninstall             HomebrewCaskUninstall    `yaml:"uninstall,omitempty" json:"uninstall,omitempty"`
+	Zap                   HomebrewCaskUninstall    `yaml:"zap,omitempty" json:"zap,omitempty"`
 
-	// Cask only:
-	Binaries     []string                 `yaml:"binaries,omitempty" json:"binaries,omitempty"`
-	Manpages     []string                 `yaml:"manpages,omitempty" json:"manpages,omitempty"`
-	URL          HomebrewCaskURL          `yaml:"url,omitempty" json:"url,omitempty"`
-	Completions  HomebrewCaskCompletions  `yaml:"completions,omitempty" json:"completions,omitempty"`
-	Dependencies []HomebrewCaskDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
-	Conflicts    []HomebrewCaskConflict   `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
-	Hooks        HomebrewCaskHooks        `yaml:"hooks,omitempty" json:"hooks,omitempty"`
-	Uninstall    HomebrewCaskUninstall    `yaml:"uninstall,omitempty" json:"uninstall,omitempty"`
-	Zap          HomebrewCaskUninstall    `yaml:"zap,omitempty" json:"zap,omitempty"`
+	// XXX: casks don't yet support it, it has no effect.
+	License string `yaml:"license,omitempty" json:"license,omitempty"`
 
 	// Pro-only
 	AlternativeNames []string `yaml:"alternative_names,omitempty" json:"alternative_names,omitempty"`
 	App              string   `yaml:"app,omitempty" json:"app,omitempty"`
 
 	// Deprecated: use [HomebrewCask.Manpages] instead.
-	Manpage string `yaml:"manpage,omitempty" json:"manpage,omitempty"`
+	Manpage string `yaml:"manpage,omitempty" json:"manpage,omitempty" jsonschema:"deprecated=true"`
 
 	// Deprecated: use [HomebrewCask.Binaries] instead.
-	Binary string `yaml:"binary,omitempty" json:"binary,omitempty"`
+	Binary string `yaml:"binary,omitempty" json:"binary,omitempty" jsonschema:"deprecated=true"`
 }
 
 type HomebrewCaskURL struct {
@@ -334,7 +337,7 @@ type HomebrewCaskConflict struct {
 	Cask string `yaml:"cask,omitempty" json:"cask,omitempty"`
 
 	// Deprecated: by homebrew.
-	Formula string `yaml:"formula,omitempty" json:"formula,omitempty"`
+	Formula string `yaml:"formula,omitempty" json:"formula,omitempty" jsonschema:"deprecated=true"`
 }
 
 type HomebrewCaskDependency struct {
@@ -441,7 +444,6 @@ type Ko struct {
 	Labels              map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
 	Annotations         map[string]string `yaml:"annotations,omitempty" json:"annotations,omitempty"`
 	User                string            `yaml:"user,omitempty" json:"user,omitempty"`
-	Repository          string            `yaml:"repository,omitempty" json:"repository,omitempty" jsonschema:"deprecated=true"` // Deprecated: use [Repositories].
 	Repositories        []string          `yaml:"repositories,omitempty" json:"repositories,omitempty"`
 	Platforms           []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
 	Tags                []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
@@ -459,6 +461,9 @@ type Ko struct {
 
 	// v2.7+
 	Disable string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
+
+	// Deprecated: use [Repositories].
+	Repository string `yaml:"repository,omitempty" json:"repository,omitempty" jsonschema:"deprecated=true"`
 }
 
 // Scoop contains the scoop.sh section.
@@ -545,7 +550,6 @@ type Build struct {
 	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty" jsonschema:"enum=,enum=go,enum=rust,enum=zig,enum=bun,enum=deno,enum=uv,enum=poetry,enum=prebuilt"`
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
 	Skip            string          `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
-	GoBinary        string          `yaml:"gobinary,omitempty" json:"gobinary,omitempty"` // Deprecated: use [Build.Tool] instead.
 	Tool            string          `yaml:"tool,omitempty" json:"tool,omitempty"`
 	Command         string          `yaml:"command,omitempty" json:"command,omitempty"`
 	NoUniqueDistDir string          `yaml:"no_unique_dist_dir,omitempty" json:"no_unique_dist_dir,omitempty" jsonschema:"oneof_type=string;boolean"`
@@ -561,6 +565,9 @@ type Build struct {
 
 	// pro options
 	PreBuilt PreBuiltOptions `yaml:"prebuilt,omitempty" json:"prebuilt,omitempty"`
+
+	// Deprecated: use [Build.Tool] instead.
+	GoBinary string `yaml:"gobinary,omitempty" json:"gobinary,omitempty" jsonschema:"deprecated=true"`
 }
 
 type PreBuiltOptions struct { // pro only
@@ -617,7 +624,7 @@ type FormatOverride struct {
 	Formats StringArray `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,enum=none,default=tar.gz"`
 
 	// Deprecated: use [Formats] instead.
-	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,enum=none,default=tar.gz"`
+	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,enum=none,default=tar.gz,deprecated=true"`
 }
 
 // File is a file inside an archive.
@@ -694,10 +701,10 @@ type Archive struct {
 	TemplatedFiles []TemplatedFile `yaml:"templated_files,omitempty" json:"templated_files,omitempty"`
 
 	// Deprecated: use [Formats] instead.
-	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,default=tar.gz"`
+	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,default=tar.gz,deprecated=true"`
 
 	// Deprecated: use [IDs] instead.
-	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty"`
+	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty" jsonschema:"deprecated=true"`
 }
 
 type ReleaseNotesMode string
@@ -785,7 +792,7 @@ type NFPM struct {
 	If string `yaml:"if,omitempty" json:"if,omitempty"`
 
 	// Deprecated: use [IDs] instead.
-	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty"`
+	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty" jsonschema:"deprecated=true"`
 }
 
 type Libdirs struct {
@@ -986,7 +993,7 @@ type Sign struct {
 	StdinFile   string   `yaml:"stdin_file,omitempty" json:"stdin_file,omitempty"`
 	Env         []string `yaml:"env,omitempty" json:"env,omitempty"`
 	Certificate string   `yaml:"certificate,omitempty" json:"certificate,omitempty"`
-	Output      bool     `yaml:"output,omitempty" json:"output,omitempty"`
+	Output      string   `yaml:"output,omitempty" json:"output,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 // BinarySign config.
@@ -1002,7 +1009,7 @@ type BinarySign struct {
 	StdinFile   string   `yaml:"stdin_file,omitempty" json:"stdin_file,omitempty"`
 	Env         []string `yaml:"env,omitempty" json:"env,omitempty"`
 	Certificate string   `yaml:"certificate,omitempty" json:"certificate,omitempty"`
-	Output      bool     `yaml:"output,omitempty" json:"output,omitempty"`
+	Output      string   `yaml:"output,omitempty" json:"output,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 type Notarize struct {
@@ -1124,7 +1131,7 @@ type Snapcraft struct {
 	TemplatedFiles []SnapcraftExtraFiles `yaml:"templated_extra_files,omitempty" json:"templated_extra_files,omitempty"`
 
 	// Deprecated: use IDs.
-	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty"`
+	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty" jsonschema:"deprecated=true"`
 }
 
 // SnapcraftExtraFiles config.
@@ -1137,7 +1144,7 @@ type SnapcraftExtraFiles struct {
 // Snapshot config.
 type Snapshot struct {
 	// Deprecated: use VersionTemplate.
-	NameTemplate    string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
+	NameTemplate    string `yaml:"name_template,omitempty" json:"name_template,omitempty" jsonschema:"deprecated=true"`
 	VersionTemplate string `yaml:"version_template,omitempty" json:"version_template,omitempty"`
 }
 
@@ -1175,6 +1182,7 @@ type Retry struct {
 }
 
 // Docker image config.
+//
 // Deprecated: use [DockerV2] instead.
 type Docker struct {
 	ID                 string   `yaml:"id,omitempty" json:"id,omitempty"`
@@ -1206,6 +1214,7 @@ type TemplatedExtraFileWithMode struct {
 }
 
 // DockerManifest config.
+//
 // Deprecated: use [DockerV2] instead.
 type DockerManifest struct {
 	ID             string   `yaml:"id,omitempty" json:"id,omitempty"`
@@ -1232,6 +1241,8 @@ type DockerV2 struct {
 	BuildArgs   map[string]string `yaml:"build_args,omitempty" json:"build_args,omitempty"`
 	Retry       Retry             `yaml:"retry,omitempty" json:"retry,omitempty"`
 	Flags       []string          `yaml:"flags,omitempty" json:"flags,omitempty"`
+	Disable     string            `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
+	SBOM        string            `yaml:"sbom,omitempty" json:"sbom,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 // DockerDigest config.
@@ -1452,56 +1463,53 @@ type Source struct {
 
 // Project includes all project configuration.
 type Project struct {
-	Version         int              `yaml:"version,omitempty" json:"version,omitempty" jsonschema:"enum=2,default=2"`
-	Pro             bool             `yaml:"pro,omitempty" json:"pro,omitempty"`
-	ProjectName     string           `yaml:"project_name,omitempty" json:"project_name,omitempty"`
-	Env             []string         `yaml:"env,omitempty" json:"env,omitempty"`
-	Release         Release          `yaml:"release,omitempty" json:"release,omitempty"`
-	Milestones      []Milestone      `yaml:"milestones,omitempty" json:"milestones,omitempty"`
-	NPMs            []NPM            `yaml:"npms,omitempty" json:"npms,omitempty"`
-	Casks           []HomebrewCask   `yaml:"homebrew_casks,omitempty" json:"homebrew_casks,omitempty"`
-	Nix             []Nix            `yaml:"nix,omitempty" json:"nix,omitempty"`
-	Winget          []Winget         `yaml:"winget,omitempty" json:"winget,omitempty"`
-	MSI             []MSI            `yaml:"msi,omitempty" json:"msi,omitempty"`
-	AppBundles      []AppBundle      `yaml:"app_bundles,omitempty" json:"app_bundles,omitempty"`
-	DMG             []DMG            `yaml:"dmg,omitempty" json:"dmg,omitempty"`
-	AURs            []AUR            `yaml:"aurs,omitempty" json:"aurs,omitempty"`
-	AURSources      []AURSource      `yaml:"aur_sources,omitempty" json:"aur_sources,omitempty"`
-	Krews           []Krew           `yaml:"krews,omitempty" json:"krews,omitempty"`
-	Kos             []Ko             `yaml:"kos,omitempty" json:"kos,omitempty"`
-	Scoops          []Scoop          `yaml:"scoops,omitempty" json:"scoops,omitempty"`
-	Builds          []Build          `yaml:"builds,omitempty" json:"builds,omitempty"`
-	Archives        []Archive        `yaml:"archives,omitempty" json:"archives,omitempty"`
-	NFPMs           []NFPM           `yaml:"nfpms,omitempty" json:"nfpms,omitempty"`
-	Snapcrafts      []Snapcraft      `yaml:"snapcrafts,omitempty" json:"snapcrafts,omitempty"`
-	Snapshot        Snapshot         `yaml:"snapshot,omitempty" json:"snapshot,omitempty"`
-	Checksum        Checksum         `yaml:"checksum,omitempty" json:"checksum,omitempty"`
-	Dockers         []Docker         `yaml:"dockers,omitempty" json:"dockers,omitempty"`
-	DockersV2       []DockerV2       `yaml:"dockers_v2,omitempty" json:"dockers_v2,omitempty"`
-	DockerDigest    DockerDigest     `yaml:"docker_digest,omitempty" json:"docker_digest,omitempty"`
-	DockerManifests []DockerManifest `yaml:"docker_manifests,omitempty" json:"docker_manifests,omitempty"`
-	Artifactories   []Upload         `yaml:"artifactories,omitempty" json:"artifactories,omitempty"`
-	Uploads         []Upload         `yaml:"uploads,omitempty" json:"uploads,omitempty"`
-	Blobs           []Blob           `yaml:"blobs,omitempty" json:"blobs,omitempty"`
-	Publishers      []Publisher      `yaml:"publishers,omitempty" json:"publishers,omitempty"`
-	Changelog       Changelog        `yaml:"changelog,omitempty" json:"changelog,omitempty"`
-	Dist            string           `yaml:"dist,omitempty" json:"dist,omitempty"`
-	Signs           []Sign           `yaml:"signs,omitempty" json:"signs,omitempty"`
-	Notarize        Notarize         `yaml:"notarize,omitempty" json:"notarize,omitempty"`
-	DockerSigns     []Sign           `yaml:"docker_signs,omitempty" json:"docker_signs,omitempty"`
-	BinarySigns     []BinarySign     `yaml:"binary_signs,omitempty" json:"binary_signs,omitempty"`
-	EnvFiles        EnvFiles         `yaml:"env_files,omitempty" json:"env_files,omitempty"`
-	Before          Before           `yaml:"before,omitempty" json:"before,omitempty"`
-	After           After            `yaml:"after,omitempty" json:"after,omitempty"` // pro-only.
-	Source          Source           `yaml:"source,omitempty" json:"source,omitempty"`
-	GoMod           GoMod            `yaml:"gomod,omitempty" json:"gomod,omitempty"`
-	Announce        Announce         `yaml:"announce,omitempty" json:"announce,omitempty"`
-	SBOMs           []SBOM           `yaml:"sboms,omitempty" json:"sboms,omitempty"`
-	Chocolateys     []Chocolatey     `yaml:"chocolateys,omitempty" json:"chocolateys,omitempty"`
-	Git             Git              `yaml:"git,omitempty" json:"git,omitempty"`
-	ReportSizes     bool             `yaml:"report_sizes,omitempty" json:"report_sizes,omitempty"`
-	Metadata        ProjectMetadata  `yaml:"metadata,omitempty" json:"metadata,omitempty"`
-
+	Version           int               `yaml:"version,omitempty" json:"version,omitempty" jsonschema:"enum=2,default=2"`
+	Pro               bool              `yaml:"pro,omitempty" json:"pro,omitempty"`
+	ProjectName       string            `yaml:"project_name,omitempty" json:"project_name,omitempty"`
+	Env               []string          `yaml:"env,omitempty" json:"env,omitempty"`
+	Release           Release           `yaml:"release,omitempty" json:"release,omitempty"`
+	Milestones        []Milestone       `yaml:"milestones,omitempty" json:"milestones,omitempty"`
+	NPMs              []NPM             `yaml:"npms,omitempty" json:"npms,omitempty"`
+	Casks             []HomebrewCask    `yaml:"homebrew_casks,omitempty" json:"homebrew_casks,omitempty"`
+	Nix               []Nix             `yaml:"nix,omitempty" json:"nix,omitempty"`
+	Winget            []Winget          `yaml:"winget,omitempty" json:"winget,omitempty"`
+	MSI               []MSI             `yaml:"msi,omitempty" json:"msi,omitempty"`
+	AppBundles        []AppBundle       `yaml:"app_bundles,omitempty" json:"app_bundles,omitempty"`
+	DMG               []DMG             `yaml:"dmg,omitempty" json:"dmg,omitempty"`
+	AURs              []AUR             `yaml:"aurs,omitempty" json:"aurs,omitempty"`
+	AURSources        []AURSource       `yaml:"aur_sources,omitempty" json:"aur_sources,omitempty"`
+	Krews             []Krew            `yaml:"krews,omitempty" json:"krews,omitempty"`
+	Kos               []Ko              `yaml:"kos,omitempty" json:"kos,omitempty"`
+	Scoops            []Scoop           `yaml:"scoops,omitempty" json:"scoops,omitempty"`
+	Builds            []Build           `yaml:"builds,omitempty" json:"builds,omitempty"`
+	Archives          []Archive         `yaml:"archives,omitempty" json:"archives,omitempty"`
+	NFPMs             []NFPM            `yaml:"nfpms,omitempty" json:"nfpms,omitempty"`
+	Snapcrafts        []Snapcraft       `yaml:"snapcrafts,omitempty" json:"snapcrafts,omitempty"`
+	Snapshot          Snapshot          `yaml:"snapshot,omitempty" json:"snapshot,omitempty"`
+	Checksum          Checksum          `yaml:"checksum,omitempty" json:"checksum,omitempty"`
+	DockersV2         []DockerV2        `yaml:"dockers_v2,omitempty" json:"dockers_v2,omitempty"`
+	DockerDigest      DockerDigest      `yaml:"docker_digest,omitempty" json:"docker_digest,omitempty"`
+	Artifactories     []Upload          `yaml:"artifactories,omitempty" json:"artifactories,omitempty"`
+	Uploads           []Upload          `yaml:"uploads,omitempty" json:"uploads,omitempty"`
+	Blobs             []Blob            `yaml:"blobs,omitempty" json:"blobs,omitempty"`
+	Publishers        []Publisher       `yaml:"publishers,omitempty" json:"publishers,omitempty"`
+	Changelog         Changelog         `yaml:"changelog,omitempty" json:"changelog,omitempty"`
+	Dist              string            `yaml:"dist,omitempty" json:"dist,omitempty"`
+	Signs             []Sign            `yaml:"signs,omitempty" json:"signs,omitempty"`
+	Notarize          Notarize          `yaml:"notarize,omitempty" json:"notarize,omitempty"`
+	DockerSigns       []Sign            `yaml:"docker_signs,omitempty" json:"docker_signs,omitempty"`
+	BinarySigns       []BinarySign      `yaml:"binary_signs,omitempty" json:"binary_signs,omitempty"`
+	EnvFiles          EnvFiles          `yaml:"env_files,omitempty" json:"env_files,omitempty"`
+	Before            Before            `yaml:"before,omitempty" json:"before,omitempty"`
+	After             After             `yaml:"after,omitempty" json:"after,omitempty"` // pro-only.
+	Source            Source            `yaml:"source,omitempty" json:"source,omitempty"`
+	GoMod             GoMod             `yaml:"gomod,omitempty" json:"gomod,omitempty"`
+	Announce          Announce          `yaml:"announce,omitempty" json:"announce,omitempty"`
+	SBOMs             []SBOM            `yaml:"sboms,omitempty" json:"sboms,omitempty"`
+	Chocolateys       []Chocolatey      `yaml:"chocolateys,omitempty" json:"chocolateys,omitempty"`
+	Git               Git               `yaml:"git,omitempty" json:"git,omitempty"`
+	ReportSizes       bool              `yaml:"report_sizes,omitempty" json:"report_sizes,omitempty"`
+	Metadata          ProjectMetadata   `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 	Makeselfs         []Makeself        `yaml:"makeselfs,omitempty" json:"makeselfs,omitempty"`
 	UniversalBinaries []UniversalBinary `yaml:"universal_binaries,omitempty" json:"universal_binaries,omitempty"`
 	UPXs              []UPX             `yaml:"upx,omitempty" json:"upx,omitempty"`
@@ -1531,7 +1539,13 @@ type Project struct {
 	TemplateFiles []TemplateFile      `yaml:"template_files,omitempty" json:"template_files,omitempty"`
 
 	// Deprecated: use [Project.Casks] instead.
-	Brews []Homebrew `yaml:"brews,omitempty" json:"brews,omitempty"`
+	Brews []Homebrew `yaml:"brews,omitempty" json:"brews,omitempty" jsonschema:"deprecated=true"`
+
+	// Deprecated: use [DockersV2] instead.
+	Dockers []Docker `yaml:"dockers,omitempty" json:"dockers,omitempty" jsonschema:"deprecated=true"`
+
+	// Deprecated: use [DockersV2] instead.
+	DockerManifests []DockerManifest `yaml:"docker_manifests,omitempty" json:"docker_manifests,omitempty" jsonschema:"deprecated=true"`
 }
 
 type TemplateFile struct {
