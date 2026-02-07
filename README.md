@@ -13,8 +13,11 @@ extra features.
 
 With GoReleaser Pro you can:
 
+- Create macOS [`.pkg` installers](https://goreleaser.com/customization/pkg);
+- Create Windows installers with [NSIS](https://goreleaser.com/customization/nsis);
+- Smart [SemVer tag sorting](https://goreleaser.com/customization/git#semver-sorting);
 - Publish to [NPM registries](https://goreleaser.com/customization/npm);
-- Native macOS App Bundles signing and DMG
+- Native macOS App Bundles, DMG, and `.pkg` signing and
   [notarization](https://goreleaser.com/customization/notarize#native);
 - Use [AI](https://goreleaser.com/customization/changelog#enhance-with-ai) to
   improve/format your release notes;
