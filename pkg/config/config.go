@@ -372,6 +372,9 @@ type Nix struct {
 	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
 
 	Dependencies []NixDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+
+	// v2.14+
+	Formatter string `yaml:"formatter,omitempty" json:"formatter,omitempty" jsonschema:"enum=alejandra,enum=nixfmt"`
 }
 
 type NixDependency struct {
@@ -381,6 +384,7 @@ type NixDependency struct {
 
 type Winget struct {
 	Name                  string             `yaml:"name,omitempty" json:"name,omitempty"`
+	PackageName           string             `yaml:"package_name,omitempty" json:"package_name,omitempty"`
 	PackageIdentifier     string             `yaml:"package_identifier,omitempty" json:"package_identifier,omitempty"`
 	Publisher             string             `yaml:"publisher" json:"publisher"`
 	PublisherURL          string             `yaml:"publisher_url,omitempty" json:"publisher_url,omitempty"`
@@ -410,7 +414,7 @@ type Winget struct {
 
 	// pro-only
 	ProductCode string `yaml:"product_code,omitempty" json:"product_code,omitempty"`
-	Use         string `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=archive,enum=binary,enum=msi"`
+	Use         string `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=archive,enum=binary,enum=msi,enum=nsis"`
 }
 
 type WingetDependency struct {
@@ -488,7 +492,7 @@ type Scoop struct {
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 
 	// pro-only
-	Use string `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=archive,enum=msi,default=archive"`
+	Use string `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=archive,enum=msi,enum=nsis,default=archive"`
 }
 
 // CommitAuthor is the author of a Git commit.
@@ -1024,6 +1028,9 @@ type MacOSSignNotarizeNative struct {
 	Enabled  string              `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Sign     MacOSSignNative     `yaml:"sign" json:"sign"`
 	Notarize MacOSNotarizeNative `yaml:"notarize" json:"notarize"`
+
+	// v2.14+
+	Use string `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=dmg,enum=pkg,default=dmg"`
 }
 
 type MacOSNotarizeNative struct {
@@ -1325,6 +1332,12 @@ type BeforePublishHook struct {
 	Output    bool     `yaml:"output,omitempty" json:"output,omitempty"`
 }
 
+// MSIHooks define actions to run before and/or after MSI packaging.
+type MSIHooks struct {
+	Before Hooks `yaml:"before,omitempty" json:"before,omitempty"`
+	After  Hooks `yaml:"after,omitempty" json:"after,omitempty"`
+}
+
 // MSI defines the configuration for the MSI package.
 // pro-only.
 type MSI struct {
@@ -1337,12 +1350,28 @@ type MSI struct {
 	Replace      bool     `yaml:"replace,omitempty" json:"replace,omitempty"`
 	ModTimestamp string   `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
 	Extensions   []string `yaml:"extensions,omitempty" json:"extensions,omitempty"`
+	Hooks        MSIHooks `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 
 	// 2.7+
 	Version string `yaml:"version,omitempty" json:"version,omitempty" jsonschema:"enum=v3,enum=v4"`
 
 	// 2.12+
 	Disable string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
+}
+
+// NSIS defines the configuration for the NSIS installer.
+// pro-only.
+type NSIS struct {
+	ID             string               `yaml:"id,omitempty" json:"id,omitempty"`
+	Name           string               `yaml:"name" json:"name"`
+	Script         string               `yaml:"script" json:"script"`
+	IDs            []string             `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Goamd64        string               `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	Files          []ExtraFile          `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	TemplatedFiles []TemplatedExtraFile `yaml:"templated_extra_files,omitempty" json:"templated_extra_files,omitempty"`
+	Replace        bool                 `yaml:"replace,omitempty" json:"replace,omitempty"`
+	ModTimestamp   string               `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
+	Disable        string               `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 // AppBundle defines the configuration for the AppBundle package.
@@ -1376,6 +1405,22 @@ type DMG struct {
 	If             string               `yaml:"if,omitempty" json:"if,omitempty"`
 	Use            string               `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=binary,enum=appbundle"`
 	TemplatedFiles []TemplatedExtraFile `yaml:"templated_extra_files,omitempty" json:"templated_extra_files,omitempty"`
+}
+
+// MacOSPkg defines the configuration for the macOS pkg package.
+// v2.14+
+// pro-only.
+type MacOSPkg struct {
+	ID              string   `yaml:"id,omitempty" json:"id,omitempty"`
+	Name            string   `yaml:"name" json:"name"`
+	IDs             []string `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Replace         bool     `yaml:"replace,omitempty" json:"replace,omitempty"`
+	ModTimestamp    string   `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
+	If              string   `yaml:"if,omitempty" json:"if,omitempty"`
+	Use             string   `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=binary,enum=appbundle"`
+	Identifier      string   `yaml:"identifier,omitempty" json:"identifier,omitempty"`             // Identifier is the package identifier (e.g., com.example.myapp).
+	InstallLocation string   `yaml:"install_location,omitempty" json:"install_location,omitempty"` // InstallLocation is the path where the binary will be installed.
+	Scripts         string   `yaml:"scripts,omitempty" json:"scripts,omitempty"`                   // Scripts is the path to a directory containing pre/postinstall scripts.
 }
 
 // Blob contains config for GO CDK blob.
@@ -1476,8 +1521,10 @@ type Project struct {
 	Nix               []Nix             `yaml:"nix,omitempty" json:"nix,omitempty"`
 	Winget            []Winget          `yaml:"winget,omitempty" json:"winget,omitempty"`
 	MSI               []MSI             `yaml:"msi,omitempty" json:"msi,omitempty"`
+	NSIs              []NSIS            `yaml:"nsis,omitempty" json:"nsis,omitempty"`
 	AppBundles        []AppBundle       `yaml:"app_bundles,omitempty" json:"app_bundles,omitempty"`
 	DMG               []DMG             `yaml:"dmg,omitempty" json:"dmg,omitempty"`
+	Pkgs              []MacOSPkg        `yaml:"pkgs,omitempty" json:"pkgs,omitempty"`
 	AURs              []AUR             `yaml:"aurs,omitempty" json:"aurs,omitempty"`
 	AURSources        []AURSource       `yaml:"aur_sources,omitempty" json:"aur_sources,omitempty"`
 	Krews             []Krew            `yaml:"krews,omitempty" json:"krews,omitempty"`
@@ -1790,7 +1837,7 @@ type Chocolatey struct {
 	Goamd64                  string                 `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 
 	// pro-only
-	Use string `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=archive,enum=msi,default=archive"`
+	Use string `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=archive,enum=msi,enum=nsis,default=archive"`
 }
 
 // ChocolateyDependency represents Chocolatey dependency.
