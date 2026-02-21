@@ -797,6 +797,9 @@ type NFPM struct {
 	// Pro-only
 	If string `yaml:"if,omitempty" json:"if,omitempty"`
 
+	// v2.14+
+	GoAmd64 []string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+
 	// Deprecated: use [IDs] instead.
 	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty" jsonschema:"deprecated=true"`
 }
@@ -882,7 +885,7 @@ type NFPMDeb struct {
 	Breaks      []string          `yaml:"breaks,omitempty" json:"breaks,omitempty"`
 	Signature   NFPMDebSignature  `yaml:"signature,omitempty" json:"signature,omitempty"`
 	Lintian     []string          `yaml:"lintian_overrides,omitempty" json:"lintian_overrides,omitempty"`
-	Compression string            `yaml:"compression,omitempty" json:"compression,omitempty" jsonschema:"enum=gzip,enum=xz,enum=none,default=gzip"`
+	Compression string            `yaml:"compression,omitempty" json:"compression,omitempty" jsonschema:"enum=gzip,enum=xz,enum=zstd,enum=none,default=gzip"`
 	Fields      map[string]string `yaml:"fields,omitempty" json:"fields,omitempty"`
 	Predepends  []string          `yaml:"predepends,omitempty" json:"predepends,omitempty"`
 }
@@ -1582,11 +1585,14 @@ type Project struct {
 	Monorepo      Monorepo            `yaml:"monorepo,omitempty" json:"monorepo,omitempty"`
 	Partial       Partial             `yaml:"partial,omitempty" json:"partial,omitempty"`
 	Nightly       Nightly             `yaml:"nightly,omitempty" json:"nightly,omitempty"`
-	Furies        []Fury              `yaml:"furies,omitempty" json:"furies,omitempty"`
+	Gemfury       []Fury              `yaml:"gemfury,omitempty" json:"gemfury,omitempty"`
 	Cloudsmiths   []Cloudsmith        `yaml:"cloudsmiths,omitempty" json:"cloudsmiths,omitempty"`
 	DockerHubs    []DockerHub         `yaml:"dockerhub,omitempty" json:"dockerhub,omitempty"`
 	BeforePublish []BeforePublishHook `yaml:"before_publish,omitempty" json:"before_publish,omitempty"`
 	TemplateFiles []TemplateFile      `yaml:"template_files,omitempty" json:"template_files,omitempty"`
+
+	// Deprecated: use [Project.Gemfury] instead.
+	Furies []Fury `yaml:"furies,omitempty" json:"furies,omitempty" jsonschema:"deprecated=true"`
 
 	// Deprecated: use [Project.Casks] instead.
 	Brews []Homebrew `yaml:"brews,omitempty" json:"brews,omitempty" jsonschema:"deprecated=true"`
