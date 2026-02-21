@@ -1415,7 +1415,7 @@ type DMG struct {
 // pro-only.
 type MacOSPkg struct {
 	ID              string   `yaml:"id,omitempty" json:"id,omitempty"`
-	Name            string   `yaml:"name" json:"name"`
+	Name            string   `yaml:"name,omitempty" json:"name,omitempty"`
 	IDs             []string `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Replace         bool     `yaml:"replace,omitempty" json:"replace,omitempty"`
 	ModTimestamp    string   `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
