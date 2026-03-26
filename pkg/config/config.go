@@ -289,6 +289,9 @@ type HomebrewCask struct {
 	Uninstall             HomebrewCaskUninstall    `yaml:"uninstall,omitempty" json:"uninstall,omitempty"`
 	Zap                   HomebrewCaskUninstall    `yaml:"zap,omitempty" json:"zap,omitempty"`
 
+	// v2.15+
+	GenerateCompletionsFromExecutable HomebrewCaskGeneratedCompletions `yaml:"generate_completions_from_executable,omitempty" json:"generate_completions_from_executable,omitempty"`
+
 	// XXX: casks don't yet support it, it has no effect.
 	License string `yaml:"license,omitempty" json:"license,omitempty"`
 
@@ -352,6 +355,14 @@ type HomebrewCaskCompletions struct {
 	Bash string `yaml:"bash,omitempty" json:"bash,omitempty"`
 	Zsh  string `yaml:"zsh,omitempty" json:"zsh,omitempty"`
 	Fish string `yaml:"fish,omitempty" json:"fish,omitempty"`
+}
+
+type HomebrewCaskGeneratedCompletions struct {
+	Executable           string   `yaml:"executable,omitempty" json:"executable,omitempty"`
+	Args                 []string `yaml:"args,omitempty" json:"args,omitempty"`
+	BaseName             string   `yaml:"base_name,omitempty" json:"base_name,omitempty"`
+	ShellParameterFormat string   `yaml:"shell_parameter_format,omitempty" json:"shell_parameter_format,omitempty"`
+	Shells               []string `yaml:"shells,omitempty" json:"shells,omitempty"`
 }
 
 type Nix struct {
@@ -1153,6 +1164,33 @@ type SnapcraftExtraFiles struct {
 	Mode        uint32 `yaml:"mode,omitempty" json:"mode,omitempty"`
 }
 
+// Flatpak config.
+type Flatpak struct {
+	ID           string   `yaml:"id,omitempty" json:"id,omitempty"`
+	IDs          []string `yaml:"ids,omitempty" json:"ids,omitempty"`
+	NameTemplate string   `yaml:"name_template,omitempty" json:"name_template,omitempty"`
+
+	// Flatpak application ID in reverse-DNS notation (e.g. org.example.MyApp).
+	AppID string `yaml:"app_id" json:"app_id"`
+
+	// Runtime to use (e.g. org.freedesktop.Platform).
+	Runtime string `yaml:"runtime" json:"runtime"`
+
+	// Runtime version (e.g. "24.08").
+	RuntimeVersion string `yaml:"runtime_version" json:"runtime_version"`
+
+	// SDK to use (e.g. org.freedesktop.Sdk).
+	SDK string `yaml:"sdk" json:"sdk"`
+
+	// Command to run inside the Flatpak sandbox.
+	Command string `yaml:"command,omitempty" json:"command,omitempty"`
+
+	// Sandbox permissions.
+	FinishArgs []string `yaml:"finish_args,omitempty" json:"finish_args,omitempty"`
+
+	Disable string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
+}
+
 // Snapshot config.
 type Snapshot struct {
 	// Deprecated: use VersionTemplate.
@@ -1537,6 +1575,7 @@ type Project struct {
 	Archives          []Archive         `yaml:"archives,omitempty" json:"archives,omitempty"`
 	NFPMs             []NFPM            `yaml:"nfpms,omitempty" json:"nfpms,omitempty"`
 	Snapcrafts        []Snapcraft       `yaml:"snapcrafts,omitempty" json:"snapcrafts,omitempty"`
+	Flatpaks          []Flatpak         `yaml:"flatpak,omitempty" json:"flatpak,omitempty"`
 	Snapshot          Snapshot          `yaml:"snapshot,omitempty" json:"snapshot,omitempty"`
 	Checksum          Checksum          `yaml:"checksum,omitempty" json:"checksum,omitempty"`
 	DockersV2         []DockerV2        `yaml:"dockers_v2,omitempty" json:"dockers_v2,omitempty"`
@@ -1779,6 +1818,9 @@ type Telegram struct {
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	ChatID          string `yaml:"chat_id,omitempty" json:"chat_id,omitempty" jsonschema:"oneof_type=string;integer"`
 	ParseMode       string `yaml:"parse_mode,omitempty" json:"parse_mode,omitempty" jsonschema:"enum=MarkdownV2,enum=HTML,default=MarkdownV2"`
+
+	// v2.15+
+	MessageThreadID string `yaml:"message_thread_id,omitempty" json:"message_thread_id,omitempty" jsonschema:"oneof_type=string;integer"`
 }
 
 type OpenCollective struct {
