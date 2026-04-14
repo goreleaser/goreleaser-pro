@@ -1,11 +1,15 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"strings"
+	"time"
+
+	"github.com/avast/retry-go/v4"
 )
 
 // IncludeFromURL allows to import a config from an URL, passing headers if needed (e.g. authorization).
@@ -29,14 +33,31 @@ func (i IncludeFromURL) Reader() (io.ReadCloser, error) {
 	for k, v := range i.Headers {
 		req.Header.Add(k, os.ExpandEnv(v))
 	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	if http.StatusOK != resp.StatusCode {
-		return nil, fmt.Errorf("%s %q: %s", "Get", i.URL, resp.Status)
-	}
-	return resp.Body, nil
+	var body io.ReadCloser
+	err = retry.Do(func() error {
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode >= 500 || resp.StatusCode == http.StatusTooManyRequests {
+			resp.Body.Close()
+			return fmt.Errorf("%s %q: %s", "Get", i.URL, resp.Status)
+		}
+		if http.StatusOK != resp.StatusCode {
+			resp.Body.Close()
+			return retry.Unrecoverable(fmt.Errorf("%s %q: %s", "Get", i.URL, resp.Status))
+		}
+		body = resp.Body
+		return nil
+	},
+		retry.Context(context.Background()),
+		retry.Attempts(3),
+		retry.Delay(2*time.Second),
+		retry.MaxDelay(15*time.Second),
+		retry.DelayType(retry.BackOffDelay),
+		retry.LastErrorOnly(true),
+	)
+	return body, err
 }
 
 // IncludeFromFile allows to import a config from another file.
