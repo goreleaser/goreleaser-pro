@@ -22,5 +22,6 @@ jobs:
             --json tagName,isPrerelease,publishedAt \
             --jq '[.[] | select(.isPrerelease and (.tagName | endswith("-nightly"))) | {tagName, publishedAt}] | sort_by(.publishedAt) | reverse | .[7:][].tagName' |
           while read -r tag; do
+            echo "Deleting $tag..."
             gh release -R goreleaser/goreleaser-pro delete "$tag" --cleanup-tag --yes
           done
