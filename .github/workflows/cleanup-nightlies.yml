@@ -17,10 +17,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release list \
+          gh release -R goreleaser/goreleaser-pro list \
             --limit 100 \
             --json tagName,isPrerelease,publishedAt \
             --jq '[.[] | select(.isPrerelease and (.tagName | endswith("-nightly"))) | {tagName, publishedAt}] | sort_by(.publishedAt) | reverse | .[7:][].tagName' |
           while read -r tag; do
-            gh release delete "$tag" --cleanup-tag --yes
+            gh release -R goreleaser/goreleaser-pro delete "$tag" --cleanup-tag --yes
           done
