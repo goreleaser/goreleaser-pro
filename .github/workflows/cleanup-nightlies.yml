@@ -20,7 +20,7 @@ jobs:
           gh release list \
             --limit 100 \
             --json tagName,isPrerelease,publishedAt \
-            --jq '[.[] | select(.isPrerelease and (.tagName | endswith("-nightly"))) | {tagName, publishedAt}] | sort_by(.publishedAt) | reverse | .[10:][].tagName' |
+            --jq '[.[] | select(.isPrerelease and (.tagName | endswith("-nightly"))) | {tagName, publishedAt}] | sort_by(.publishedAt) | reverse | .[7:][].tagName' |
           while read -r tag; do
             gh release delete "$tag" --cleanup-tag --yes
           done
