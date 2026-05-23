@@ -36,7 +36,7 @@ func (bh *Hook) UnmarshalYAML(unmarshal func(any) error) error {
 		if err := unmarshal(&hook); err != nil {
 			return err
 		}
-		*bh = (Hook)(hook)
+		*bh = Hook(hook)
 		return nil
 	}
 
@@ -75,7 +75,7 @@ func (bhc *Hooks) UnmarshalYAML(unmarshal func(any) error) error {
 	if err := unmarshal(&hooks); err != nil {
 		return err
 	}
-	*bhc = (Hooks)(hooks)
+	*bhc = Hooks(hooks)
 	return nil
 }
 
@@ -214,7 +214,7 @@ func (i *IncludedMarkdown) UnmarshalYAML(unmarshal func(any) error) error {
 		if err := unmarshal(&hook); err != nil {
 			return err
 		}
-		*i = (IncludedMarkdown)(hook)
+		*i = IncludedMarkdown(hook)
 		return nil
 	}
 

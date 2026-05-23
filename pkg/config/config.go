@@ -386,6 +386,9 @@ type Nix struct {
 
 	// v2.14+
 	Formatter string `yaml:"formatter,omitempty" json:"formatter,omitempty" jsonschema:"enum=alejandra,enum=nixfmt"`
+
+	// v2.16+
+	MainProgram string `yaml:"main_program,omitempty" json:"main_program,omitempty"`
 }
 
 type NixDependency struct {
@@ -519,12 +522,6 @@ type CommitSigning struct {
 	Key     string `yaml:"key,omitempty" json:"key,omitempty"`
 	Program string `yaml:"program,omitempty" json:"program,omitempty"`
 	Format  string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=openpgp,enum=x509,enum=ssh,default=openpgp"`
-}
-
-// BuildHooks define actions to run before and/or after something.
-type BuildHooks struct { // renamed on pro
-	Pre  string `yaml:"pre,omitempty" json:"pre,omitempty"`
-	Post string `yaml:"post,omitempty" json:"post,omitempty"`
 }
 
 // IgnoredBuild represents a build ignored by the user.
@@ -1320,6 +1317,7 @@ type DockerV2 struct {
 	Flags       []string          `yaml:"flags,omitempty" json:"flags,omitempty"`
 	Disable     string            `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 	SBOM        string            `yaml:"sbom,omitempty" json:"sbom,omitempty" jsonschema:"oneof_type=string;boolean"`
+	Hooks       BuildHookConfig   `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 
 	Retry Retry `yaml:"retry,omitempty" json:"retry,omitempty"` // Deprecated: use [Project.Retry] instead.
 }
@@ -1751,7 +1749,7 @@ type DockerHub struct {
 type Fury struct {
 	Account    string   `yaml:"account" json:"account"`
 	IDs        []string `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Formats    []string `yaml:"formats,omitempty" json:"formats,omitempty"`
+	Formats    []string `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=src.rpm"`
 	SecretName string   `yaml:"secret_name,omitempty" json:"secret_name,omitempty"`
 	Disable    string   `yaml:"disable,omitempty" json:"disable,omitempty"`
 }
@@ -1760,7 +1758,7 @@ type Cloudsmith struct {
 	IDs          []string `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Organization string   `yaml:"organization" json:"organization"`
 	Repository   string   `yaml:"repository" json:"repository"`
-	Formats      []string `yaml:"formats,omitempty" json:"formats,omitempty"`
+	Formats      []string `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=src.rpm"`
 	SecretName   string   `yaml:"secret_name,omitempty" json:"secret_name,omitempty"`
 	Disable      string   `yaml:"disable,omitempty" json:"disable,omitempty"`
 
