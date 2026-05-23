@@ -27,6 +27,7 @@ With GoReleaser Pro you can:
 - Have [global defaults for homepage, description, etc](https://goreleaser.com/customization/metadata);
 - Run [hooks before publishing](https://goreleaser.com/customization/beforepublish) artifacts;
 - Cross publish (e.g. releases to GitLab, pushes Homebrew Tap to GitHub);
+- Publish [versioned Homebrew Casks](https://goreleaser.com/customization/homebrew_casks#versioned-casks);
 - Keep [DockerHub image descriptions up to date](https://goreleaser.com/customization/dockerhub);
 - Create [macOS disk images (DMGs)](https://goreleaser.com/customization/dmg);
 - Create [Windows installers](https://goreleaser.com/customization/msi);
