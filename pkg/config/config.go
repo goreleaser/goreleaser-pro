@@ -70,6 +70,10 @@ type Repo struct {
 	Owner  string `yaml:"owner,omitempty" json:"owner,omitempty"`
 	Name   string `yaml:"name,omitempty" json:"name,omitempty"`
 	RawURL string `yaml:"-" json:"-"`
+
+	// Override the default token for this specific repository, e.g. when
+	// releasing to a repository that needs a different token.
+	Token string `yaml:"token,omitempty" json:"token,omitempty"`
 }
 
 // String of the repo, e.g. owner/name.
@@ -1732,6 +1736,7 @@ type Project struct {
 	DockerHubs    []DockerHub         `yaml:"dockerhub,omitempty" json:"dockerhub,omitempty"`
 	BeforePublish []BeforePublishHook `yaml:"before_publish,omitempty" json:"before_publish,omitempty"`
 	TemplateFiles []TemplateFile      `yaml:"template_files,omitempty" json:"template_files,omitempty"`
+	Verify        *Verify             `yaml:"verify,omitempty" json:"verify,omitempty"`
 
 	// Deprecated: use [Project.Gemfury] instead.
 	Furies []Fury `yaml:"furies,omitempty" json:"furies,omitempty" jsonschema:"deprecated=true"`
@@ -1751,6 +1756,30 @@ type TemplateFile struct {
 	Source      string      `yaml:"src" json:"src"`
 	Destination string      `yaml:"dst" json:"dst"`
 	Mode        os.FileMode `yaml:"mode,omitempty" json:"mode,omitempty"`
+}
+
+// Verify is the pro-only post-release verification configuration.
+//
+// It re-downloads the published release assets into dist/verify and runs the
+// configured commands against them, catching broken uploads, bad signatures,
+// and CDN propagation issues.
+type Verify struct {
+	Disable  string          `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
+	Commands []VerifyCommand `yaml:"commands,omitempty" json:"commands,omitempty"`
+	Retry    Retry           `yaml:"retry,omitempty" json:"retry,omitempty"`
+}
+
+// VerifyCommand is a single verification command.
+//
+// Depending on its context, it runs once in the download directory ('dir'),
+// once per downloaded asset ('asset'), or once per published docker
+// image/manifest ('image').
+type VerifyCommand struct {
+	Context string   `yaml:"context,omitempty" json:"context,omitempty" jsonschema:"enum=dir,enum=asset,enum=image,default=dir"`
+	If      string   `yaml:"if,omitempty" json:"if,omitempty"`
+	Cmd     string   `yaml:"cmd" json:"cmd"`
+	Args    []string `yaml:"args,omitempty" json:"args,omitempty"`
+	Env     []string `yaml:"env,omitempty" json:"env,omitempty"`
 }
 
 type ProjectMetadata struct {
