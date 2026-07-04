@@ -13,6 +13,7 @@ extra features.
 
 With GoReleaser Pro you can:
 
+- [Verify published release assets](https://goreleaser.com/customization/verify) by re-downloading them and running your own checks;
 - Create macOS [`.pkg` installers](https://goreleaser.com/customization/pkg);
 - Create Windows installers with [NSIS](https://goreleaser.com/customization/nsis);
 - Smart [SemVer tag sorting](https://goreleaser.com/customization/git#semver-sorting);
