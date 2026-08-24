@@ -13,6 +13,7 @@ extra features.
 
 With GoReleaser Pro you can:
 
+- [Export OpenTelemetry traces](https://goreleaser.com/customization/telemetry) of your releases to your own collector (Enterprise plan);
 - [Verify published release assets](https://goreleaser.com/customization/verify) by re-downloading them and running your own checks;
 - Create macOS [`.pkg` installers](https://goreleaser.com/customization/pkg);
 - Create Windows installers with [NSIS](https://goreleaser.com/customization/nsis);
