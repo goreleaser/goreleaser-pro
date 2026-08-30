@@ -13,63 +13,72 @@ extra features.
 
 With GoReleaser Pro you can:
 
-- [Export OpenTelemetry traces](https://goreleaser.com/customization/telemetry) of your releases to your own collector (Enterprise plan);
-- [Verify published release assets](https://goreleaser.com/customization/verify) by re-downloading them and running your own checks;
-- Create macOS [`.pkg` installers](https://goreleaser.com/customization/pkg);
-- Create Windows installers with [NSIS](https://goreleaser.com/customization/nsis);
-- Smart [SemVer tag sorting](https://goreleaser.com/customization/git#semver-sorting);
-- Publish to [NPM registries](https://goreleaser.com/customization/npm);
-- Native macOS App Bundles, DMG, and `.pkg` signing and
-  [notarization](https://goreleaser.com/customization/notarize#native);
-- Use [AI](https://goreleaser.com/customization/changelog#enhance-with-ai) to
-  improve/format your release notes;
+- [Export OpenTelemetry traces](https://goreleaser.com/customization/telemetry/) of your releases to your own collector (Enterprise plan);
+- Run in air-gapped environments with [offline licenses](https://goreleaser.com/pro/#offline-licenses)
+  (Business and Enterprise plans);
+- [Verify published release assets](https://goreleaser.com/customization/verify/) by re-downloading them and running your own checks;
+- Create [macOS installers (`.pkg`)](https://goreleaser.com/customization/package/pkg/);
+- Create [Windows installers (`.exe`) with NSIS](https://goreleaser.com/customization/package/nsis/);
+- Smart [SemVer tag sorting](https://goreleaser.com/customization/general/git/#semver-sorting);
+- Publish to [NPM registries](https://goreleaser.com/customization/publish/npm/);
+- [Native sign and notarize](https://goreleaser.com/customization/sign/notarize/#native)
+  macOS App Bundles, Disk Images, and Installers;
+- Use [AI](https://goreleaser.com/customization/publish/changelog/#enhance-with-ai) to improve/format
+  your release notes;
 - Further filter artifacts with `if` statements;
-- Create macOS [App Bundles](https://goreleaser.com/customization/app_bundles);
-- Easily create `alpine`, `apt`, and `yum` repositories with the [CloudSmith integration](https://goreleaser.com/customization/cloudsmith);
-- Have [global defaults for homepage, description, etc](https://goreleaser.com/customization/metadata);
-- Run [hooks before publishing](https://goreleaser.com/customization/beforepublish) artifacts;
+- Create [macOS App Bundles (`.app`)](https://goreleaser.com/customization/package/app_bundles/);
+- Easily create `alpine`, `apt`, and `yum` repositories with the
+  [CloudSmith integration](https://goreleaser.com/customization/publish/cloudsmith/);
+- Have [global defaults for homepage, description, etc](https://goreleaser.com/customization/general/metadata/);
+- Run [hooks before publishing](https://goreleaser.com/customization/publish/beforepublish/) artifacts;
 - Cross publish (e.g. releases to GitLab, pushes Homebrew Tap to GitHub);
-- Publish [versioned Homebrew Casks](https://goreleaser.com/customization/homebrew_casks#versioned-casks);
-- Keep [DockerHub image descriptions up to date](https://goreleaser.com/customization/dockerhub);
-- Create [macOS disk images (DMGs)](https://goreleaser.com/customization/dmg);
-- Create [Windows installers](https://goreleaser.com/customization/msi);
+- Publish [versioned Homebrew Casks](https://goreleaser.com/customization/publish/homebrew_casks/#versioned-casks)
+  and [Formulas](https://goreleaser.com/customization/publish/homebrew_formulas/#versioned-formulas);
+- Keep [DockerHub image descriptions up to date](https://goreleaser.com/customization/publish/dockerhub/);
+- Create [macOS disk images (`.dmg`)](https://goreleaser.com/customization/package/dmg/);
+- Create [Windows installers (`.msi`)](https://goreleaser.com/customization/package/msi/) with msitools or WiX;
 - Use `goreleaser release --single-target` to build the whole pipeline for a
   single architecture locally;
 - Check boxes in pull request templates;
-- [Template entire files](https://goreleaser.com/customization/templatefiles) and add them to the
+- [Template entire files](https://goreleaser.com/customization/general/templatefiles/) and add them to the
   release. You can also template files that will be included in archives,
   packages, Docker images, etc...;
-- Use the [`.Artifacts`](https://goreleaser.com/customization/templates/#artifacts) template
+- Use the [`.Artifacts`](https://goreleaser.com/customization/general/templates/#artifacts) template
   variable to build more powerful customizations;
-- [Split and merge builds](https://goreleaser.com/customization/partial) to speed up your release
+- Use extra [template fields](https://goreleaser.com/customization/general/templates/#common-fields-pro)
+  and [functions](https://goreleaser.com/customization/general/templates/#functions-pro);
+- Upload to multiple [Artifactory](https://goreleaser.com/customization/publish/artifactory/) and
+  [HTTP server](https://goreleaser.com/customization/publish/upload/) instances;
+- [Split and merge builds](https://goreleaser.com/customization/general/partial/) to speed up your release
   by splitting work, use CGO, or run platform-specific code;
-- More [changelog options](https://goreleaser.com/customization/changelog): Filter commits by path
+- More [changelog options](https://goreleaser.com/customization/publish/changelog/): Filter commits by path
   & subgroups, group dividers;
-- Have custom [before and after hooks for archives](https://goreleaser.com/customization/archive/);
+- Have custom [before and after hooks for archives](https://goreleaser.com/customization/package/archives/);
 - Prepare a release with
-  [`goreleaser release --prepare`](https://goreleaser.com/cmd/goreleaser_release/), publish and
-  announce it later with
-  [`goreleaser publish`](https://goreleaser.com/cmd/goreleaser_publish/) and
-  [`goreleaser announce`](https://goreleaser.com/cmd/goreleaser_announce/), or with
-  [`goreleaser continue`](https://goreleaser.com/cmd/goreleaser_continue/);
+  `goreleaser release --prepare`,
+  publish and announce it later with
+  `goreleaser publish` and
+  `goreleaser announce`, or with
+  `goreleaser continue`;
 - Preview and test your next release's change log with
-  [`goreleaser changelog`](https://goreleaser.com/cmd/goreleaser_changelog/);
-- Continuously release [nightly builds](https://goreleaser.com/customization/nightlies/);
+  `goreleaser changelog`;
+- Continuously release [nightly builds](https://goreleaser.com/customization/publish/nightlies/);
 - Import pre-built binaries with the
-  [`prebuilt` builder](https://goreleaser.com./customization/builds.md#import-pre-built-binaries);
-- Rootless build [Docker images](https://goreleaser.com./customization/docker.md#podman) and
-  [manifests](https://goreleaser.com./customization/docker_manifest.md#podman) with
-  [Podman](https://goreleaser.comhttps://podman.io);
-- Easily create `apt` and `yum` repositories with the
-  [fury.io integration](https://goreleaser.com/customization/fury/);
+  [`prebuilt` builder](https://goreleaser.com/customization/builds/builders/prebuilt/);
+- Rootless build [Docker images](https://goreleaser.com/customization/package/docker/#using-podman)
+  and
+  [manifests](https://goreleaser.com/customization/package/docker_manifest/#using-podman) with
+  [Podman](https://podman.io);
+- Easily create `apt`, `yum`, and alpine repositories with the
+  [gemfury.io integration](https://goreleaser.com/customization/publish/gemfury/);
 - Reuse configuration files with the
-  [include keyword](https://goreleaser.com/customization/includes/);
+  [include keyword](https://goreleaser.com/customization/general/includes/);
 - Run commands after the release with
-  [global after hooks](https://goreleaser.com/customization/hooks/);
+  [global after hooks](https://goreleaser.com/customization/general/hooks/);
 - Use GoReleaser within your [monorepo](https://goreleaser.com/customization/monorepo/);
 - Create
-  [custom template variables](https://goreleaser.com/customization/templates/#custom-variables)
-  (goes well with [includes](https://goreleaser.com/customization/includes/)).
+  [custom template variables](https://goreleaser.com/customization/general/templates/#custom-variables)
+  (goes well with [includes](https://goreleaser.com/customization/general/includes/)).
 
 And more features will be added soon.
 
