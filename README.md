@@ -19,7 +19,8 @@ With GoReleaser Pro you can:
 - [Verify published release assets](https://goreleaser.com/customization/verify/) by re-downloading them and running your own checks;
 - Create [macOS installers (`.pkg`)](https://goreleaser.com/customization/package/pkg/);
 - Create [Windows installers (`.exe`) with NSIS](https://goreleaser.com/customization/package/nsis/);
-- Smart [SemVer tag sorting](https://goreleaser.com/customization/general/git/#semver-sorting);
+- [SemVer and smart SemVer tag sorting](https://goreleaser.com/customization/general/git/#smart-semver-sorting),
+  and tag exclusion patterns and prefixes;
 - Publish to [NPM registries](https://goreleaser.com/customization/publish/npm/);
 - [Native sign and notarize](https://goreleaser.com/customization/sign/notarize/#native)
   macOS App Bundles, Disk Images, and Installers;
@@ -39,7 +40,7 @@ With GoReleaser Pro you can:
 - Create [Windows installers (`.msi`)](https://goreleaser.com/customization/package/msi/) with msitools or WiX;
 - Use `goreleaser release --single-target` to build the whole pipeline for a
   single architecture locally;
-- Check boxes in pull request templates;
+- Check boxes in GitHub pull request templates;
 - [Template entire files](https://goreleaser.com/customization/general/templatefiles/) and add them to the
   release. You can also template files that will be included in archives,
   packages, Docker images, etc...;
@@ -51,8 +52,9 @@ With GoReleaser Pro you can:
   [HTTP server](https://goreleaser.com/customization/publish/upload/) instances;
 - [Split and merge builds](https://goreleaser.com/customization/general/partial/) to speed up your release
   by splitting work, use CGO, or run platform-specific code;
-- More [changelog options](https://goreleaser.com/customization/publish/changelog/): Filter commits by path
-  & subgroups, group dividers;
+- More [changelog options](https://goreleaser.com/customization/publish/changelog/): Filter commits by path,
+  use subgroups and group dividers, and set a custom title;
+- Load release notes [headers and footers](https://goreleaser.com/customization/publish/scm/) from files or URLs;
 - Have custom [before and after hooks for archives](https://goreleaser.com/customization/package/archives/);
 - Prepare a release with
   `goreleaser release --prepare`,
